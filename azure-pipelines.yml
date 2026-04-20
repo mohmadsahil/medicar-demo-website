@@ -1,21 +1,38 @@
 trigger:
-  branches:
-    include:
-      - uat_u
+- uat
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
+
+workspace:
+  clean: all
 
 steps:
-  # Debug step (optional) to verify connectivity
-  - script: |
-      echo "Triggering deployment webhook for abym-leadmanagement-api..."
-    displayName: "Debug Info"
+- checkout: self
+  clean: true
+  fetchDepth: 0
 
-  # Call deployment webhook
-  - script: |
-      curl -X POST "http://62.72.57.63:3001/deploy" \
-           -H "x-auth-token: SecretToken123" \
-           -H "Content-Type: application/json" \
-           --data '{"service":"abym-leadmanagement"}'
-    displayName: "Call Deployment Webhook"
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    chmod +x node_modules/.bin/vite
+    npm run build
+  displayName: Install and Build
+
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir -p $(Build.ArtifactStagingDirectory)/artifact
+      rsync -av \
+        --exclude='azure-pipelines.yml' \
+        . $(Build.ArtifactStagingDirectory)/artifact/
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/artifact'
+    publishLocation: 'pipeline'
+    artifactName: 'drop'
