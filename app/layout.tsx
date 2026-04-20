@@ -11,13 +11,16 @@ export const metadata: Metadata = {
   description: "Enterprise-grade platform for modern teams.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <head>
-        <script src="https://demo.digitalanumati.com/widget.iife.js" data-token="U2FsdGVkX1_4h-289MpF1fZmfABHyTJRNHyPyc3mKjkwk8WUI9CYRA6tT2N_0Ky0"></script>
-      </head>
-      <body className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen`}>
+      <body
+        className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen`}
+      >
         <AuthProvider>
           <Navbar />
           <main>{children}</main>
@@ -27,37 +30,94 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div className="md:col-span-2">
                   <span className="text-xl font-bold text-white">Demo</span>
                   <p className="mt-3 text-sm leading-relaxed max-w-xs">
-                    Building enterprise-grade software solutions for teams that demand reliability,
-                    security, and performance.
+                    Building enterprise-grade software solutions for teams that
+                    demand reliability, security, and performance.
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-4">Company</h4>
+                  <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-4">
+                    Company
+                  </h4>
                   <ul className="space-y-2 text-sm">
-                    <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-                    <li><a href="/careers" className="hover:text-white transition-colors">Careers</a></li>
-                    <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
+                    <li>
+                      <a
+                        href="/"
+                        className="hover:text-white transition-colors"
+                      >
+                        Home
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/careers"
+                        className="hover:text-white transition-colors"
+                      >
+                        Careers
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/contact"
+                        className="hover:text-white transition-colors"
+                      >
+                        Contact
+                      </a>
+                    </li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-4">Account</h4>
+                  <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-4">
+                    Account
+                  </h4>
                   <ul className="space-y-2 text-sm">
-                    <li><a href="/login" className="hover:text-white transition-colors">Sign In</a></li>
-                    <li><a href="/login" className="hover:text-white transition-colors">Create Account</a></li>
-                    <li><a href="/profile" className="hover:text-white transition-colors">Profile</a></li>
+                    <li>
+                      <a
+                        href="/login"
+                        className="hover:text-white transition-colors"
+                      >
+                        Sign In
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/login"
+                        className="hover:text-white transition-colors"
+                      >
+                        Create Account
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/profile"
+                        className="hover:text-white transition-colors"
+                      >
+                        Profile
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </div>
               <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <p>© {new Date().getFullYear()} Demo Technologies. All rights reserved.</p>
+                <p>
+                  © {new Date().getFullYear()} Demo Technologies. All rights
+                  reserved.
+                </p>
                 <div className="flex gap-4">
-                  <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                  <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Privacy Policy
+                  </a>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Terms of Service
+                  </a>
                 </div>
               </div>
             </div>
           </footer>
         </AuthProvider>
+        <script
+          src="https://demo.digitalanumati.com/widget.iife.js"
+          data-token="U2FsdGVkX1_4h-289MpF1fZmfABHyTJRNHyPyc3mKjkwk8WUI9CYRA6tT2N_0Ky0"
+        ></script>
       </body>
     </html>
   );
