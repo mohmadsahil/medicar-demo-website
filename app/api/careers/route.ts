@@ -17,18 +17,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
     }
 
-    if (!consentId?.trim()) {
-      return NextResponse.json({ error: "Consent ID is required." }, { status: 400 });
+    let revokeUrl: string | undefined;
+    let consentUserId: string | undefined;
+    let consentRecordId: string | undefined;
+
+    if (consentId?.trim()) {
+      try {
+        const referenceId = `${crypto.randomUUID()}${Date.now()}`;
+        const consentResponse = await verifyDigitalAnumatiConsent(consentId.trim(), referenceId, email.toLowerCase());
+        console.log("[careers] verifyDigitalAnumatiConsent", consentResponse);
+        revokeUrl = consentResponse?.data?.revokeUrl;
+        consentUserId = consentResponse?.data?.userId;
+        consentRecordId = consentResponse?.data?.consentRecordId;
+      } catch (err) {
+        console.error("[careers] consent verify failed (non-blocking):", err);
+      }
     }
-
-    // Verify consent
-    const referenceId = `${crypto.randomUUID()}${Date.now()}`;
-    const consentResponse = await verifyDigitalAnumatiConsent(consentId.trim(), referenceId, email.toLowerCase());
-    console.log("[careers] verifyDigitalAnumatiConsent", consentResponse);
-
-    const revokeUrl = consentResponse?.data?.revokeUrl;
-    const consentUserId = consentResponse?.data?.userId;
-    const consentRecordId = consentResponse?.data?.consentRecordId;
 
     await connectDB();
     await Application.create({

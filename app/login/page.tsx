@@ -11,7 +11,8 @@ export default function LoginPage() {
   const { user, loading, login, register } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "", consentId: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [consentChecked, setConsentChecked] = useState(false);
   const [errors, setErrors] = useState<Partial<typeof form & { general: string }>>({});
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +44,8 @@ export default function LoginPage() {
       }
     }
 
-    if (mode === "signup" && !form.consentId.trim()) {
-      e.consentId = "Consent ID is required.";
+    if (mode === "signup" && !consentChecked) {
+      e.general = "Please confirm your consent before creating an account.";
     }
 
     setErrors(e);
@@ -71,7 +72,8 @@ export default function LoginPage() {
           router.push("/profile");
         }
       } else {
-        const err = await register(form.name, form.email, form.password, form.consentId);
+        const consentId = localStorage.getItem("da_consent_id") ?? "";
+        const err = await register(form.name, form.email, form.password, consentId);
         if (err) {
           setErrors({ general: err });
         } else {
@@ -87,7 +89,8 @@ export default function LoginPage() {
     setMode(m);
     setErrors({});
     setSuccess("");
-    setForm({ name: "", email: "", password: "", confirm: "", consentId: "" });
+    setForm({ name: "", email: "", password: "", confirm: "" });
+    setConsentChecked(false);
   }
 
   const titles: Record<Mode, string> = {
@@ -215,20 +218,6 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {mode === "signup" && (
-                <div>
-                  <label className="form-label" htmlFor="l-consent">Consent ID <span className="text-red-500">*</span></label>
-                  <input
-                    id="l-consent"
-                    type="text"
-                    className={`form-input font-mono text-sm ${errors.consentId ? "border-red-400" : ""}`}
-                    placeholder="Enter your Digital Anumati consent ID"
-                    value={form.consentId}
-                    onChange={(e) => setForm((f) => ({ ...f, consentId: e.target.value }))}
-                  />
-                  {errors.consentId && <p className="text-red-500 text-xs mt-1">{errors.consentId}</p>}
-                </div>
-              )}
 
               {mode === "signup" && (
                 <div>
@@ -244,6 +233,20 @@ export default function LoginPage() {
                   />
                   {errors.confirm && <p className="text-red-500 text-xs mt-1">{errors.confirm}</p>}
                 </div>
+              )}
+
+              {mode === "signup" && (
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600"
+                    checked={consentChecked}
+                    onChange={(e) => setConsentChecked(e.target.checked)}
+                  />
+                  <span className="text-sm text-gray-600">
+                    I confirm that I have reviewed and agree to the data consent associated with this registration.
+                  </span>
+                </label>
               )}
 
               {errors.general && (

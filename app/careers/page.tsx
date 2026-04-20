@@ -66,17 +66,18 @@ type FormState = {
   position: string;
   resume: File | null;
   message: string;
-  consentId: string;
 };
 
 type Errors = Partial<Record<keyof FormState, string>>;
 
 export default function CareersPage() {
-  const [form, setForm] = useState<FormState>({ name: "", email: "", phone: "", position: "", resume: null, message: "", consentId: "" });
+  const [form, setForm] = useState<FormState>({ name: "", email: "", phone: "", position: "", resume: null, message: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState("");
   const [selectedJob, setSelectedJob] = useState<string>("");
 
   function validate(): boolean {
@@ -94,7 +95,6 @@ export default function CareersPage() {
     }
     if (!form.position.trim()) e.position = "Please select a position.";
     if (!form.resume) e.resume = "Please upload your resume.";
-    if (!form.consentId.trim()) e.consentId = "Consent ID is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -102,6 +102,11 @@ export default function CareersPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
+    if (!consentChecked) {
+      setConsentError("Please confirm your consent before submitting.");
+      return;
+    }
+    setConsentError("");
     setSubmitting(true);
     setServerError("");
     try {
@@ -115,7 +120,7 @@ export default function CareersPage() {
           position: form.position,
           resumeName: form.resume!.name,
           message: form.message,
-          consentId: form.consentId,
+          consentId: localStorage.getItem("da_consent_id") ?? "",
         }),
       });
       const data = await res.json();
@@ -231,8 +236,10 @@ export default function CareersPage() {
               <button
                 onClick={() => {
                   setSubmitted(false);
-                  setForm({ name: "", email: "", phone: "", position: "", resume: null, message: "", consentId: "" });
+                  setForm({ name: "", email: "", phone: "", position: "", resume: null, message: "" });
                   setSelectedJob("");
+                  setConsentChecked(false);
+                  setConsentError("");
                 }}
                 className="mt-6 btn-primary"
               >
@@ -343,18 +350,18 @@ export default function CareersPage() {
                 />
               </div>
 
-              <div>
-                <label className="form-label" htmlFor="ca-consent">Consent ID <span className="text-red-500">*</span></label>
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
-                  id="ca-consent"
-                  type="text"
-                  className={`form-input font-mono text-sm ${errors.consentId ? "border-red-400" : ""}`}
-                  placeholder="Enter your Digital Anumati consent ID"
-                  value={form.consentId}
-                  onChange={(e) => setForm((f) => ({ ...f, consentId: e.target.value }))}
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600"
+                  checked={consentChecked}
+                  onChange={(e) => { setConsentChecked(e.target.checked); setConsentError(""); }}
                 />
-                {errors.consentId && <p className="text-red-500 text-xs mt-1">{errors.consentId}</p>}
-              </div>
+                <span className="text-sm text-gray-600">
+                  I confirm that I have reviewed and agree to the data consent associated with this application.
+                </span>
+              </label>
+              {consentError && <p className="text-red-500 text-xs -mt-2">{consentError}</p>}
 
               {serverError && (
                 <div className="text-red-700 text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-lg">{serverError}</div>

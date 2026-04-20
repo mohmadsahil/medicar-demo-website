@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 
-type FormState = { name: string; email: string; message: string; consentId: string };
+type FormState = { name: string; email: string; message: string };
 type Errors = Partial<FormState>;
 
 export default function ContactPage() {
-  const [form, setForm] = useState<FormState>({ name: "", email: "", message: "", consentId: "" });
+  const [form, setForm] = useState<FormState>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState("");
 
   function validate(): boolean {
     const e: Errors = {};
@@ -25,7 +27,6 @@ export default function ContactPage() {
     } else if (form.message.trim().length < 10) {
       e.message = "Message must be at least 10 characters.";
     }
-    if (!form.consentId.trim()) e.consentId = "Consent ID is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -33,13 +34,18 @@ export default function ContactPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
+    if (!consentChecked) {
+      setConsentError("Please confirm your consent before submitting.");
+      return;
+    }
+    setConsentError("");
     setSubmitting(true);
     setServerError("");
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, email: form.email, message: form.message, consentId: form.consentId }),
+        body: JSON.stringify({ name: form.name, email: form.email, message: form.message, consentId: localStorage.getItem("da_consent_id") ?? "" }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -119,7 +125,7 @@ export default function ContactPage() {
                 <strong>{form.email}</strong> within 24 hours.
               </p>
               <button
-                onClick={() => { setSubmitted(false); setForm({ name: "", email: "", message: "", consentId: "" }); }}
+                onClick={() => { setSubmitted(false); setForm({ name: "", email: "", message: "" }); setConsentChecked(false); setConsentError(""); }}
                 className="mt-6 btn-primary"
               >
                 Send Another Message
@@ -171,18 +177,18 @@ export default function ContactPage() {
                 {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
               </div>
 
-              <div>
-                <label className="form-label" htmlFor="ct-consent">Consent ID <span className="text-red-500">*</span></label>
+              <label className="flex items-start gap-3 cursor-pointer">
                 <input
-                  id="ct-consent"
-                  type="text"
-                  className={`form-input font-mono text-sm ${errors.consentId ? "border-red-400" : ""}`}
-                  placeholder="Enter your Digital Anumati consent ID"
-                  value={form.consentId}
-                  onChange={(e) => setForm((f) => ({ ...f, consentId: e.target.value }))}
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600"
+                  checked={consentChecked}
+                  onChange={(e) => { setConsentChecked(e.target.checked); setConsentError(""); }}
                 />
-                {errors.consentId && <p className="text-red-500 text-xs mt-1">{errors.consentId}</p>}
-              </div>
+                <span className="text-sm text-gray-600">
+                  I confirm that I have reviewed and agree to the data consent associated with this message.
+                </span>
+              </label>
+              {consentError && <p className="text-red-500 text-xs -mt-2">{consentError}</p>}
 
               {serverError && (
                 <div className="text-red-700 text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
