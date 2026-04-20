@@ -7,7 +7,14 @@ export interface IContact extends Document {
   consentId?: string;
   consentUserId?: string;
   consentRecordId?: string;
+  referenceId?: string;
   revokeUrl?: string;
+  consentGranted: boolean;
+  consentRevoked: boolean;
+  consentErased: boolean;
+  consentAutoExpired: boolean;
+  consentExtended: boolean;
+  consentUpdated: boolean;
   createdAt: Date;
 }
 
@@ -19,7 +26,14 @@ const ContactSchema = new Schema<IContact>(
     consentId: { type: String, trim: true },
     consentUserId: { type: String, trim: true },
     consentRecordId: { type: String, trim: true },
+    referenceId: { type: String, trim: true, index: true },
     revokeUrl: { type: String, trim: true },
+    consentGranted: { type: Boolean, default: false },
+    consentRevoked: { type: Boolean, default: false },
+    consentErased: { type: Boolean, default: false },
+    consentAutoExpired: { type: Boolean, default: false },
+    consentExtended: { type: Boolean, default: false },
+    consentUpdated: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

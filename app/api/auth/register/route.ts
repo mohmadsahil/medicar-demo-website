@@ -25,10 +25,11 @@ export async function POST(req: NextRequest) {
     let revokeUrl: string | undefined;
     let consentUserId: string | undefined;
     let consentRecordId: string | undefined;
+    let referenceId: string | undefined;
 
     if (consentId?.trim()) {
       try {
-        const referenceId = `${crypto.randomUUID()}${Date.now()}`;
+        referenceId = `${crypto.randomUUID()}${Date.now()}`;
         const consentResponse = await verifyDigitalAnumatiConsent(consentId.trim(), referenceId, email.toLowerCase());
         console.log("[register] verifyDigitalAnumatiConsent", consentResponse);
         revokeUrl = consentResponse?.data?.revokeUrl;
@@ -51,9 +52,10 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       email: email.toLowerCase(),
       password: hashed,
-      consentId: consentId.trim(),
+      consentId: consentId?.trim(),
       consentUserId,
       consentRecordId,
+      referenceId,
       revokeUrl,
     });
 
