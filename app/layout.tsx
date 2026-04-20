@@ -14,6 +14,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://demo.digitalanumati.com/widget.iife.js" data-token="U2FsdGVkX1_4h-289MpF1fZmfABHyTJRNHyPyc3mKjkwk8WUI9CYRA6tT2N_0Ky0"></script>
+      </head>
       <body className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen`}>
         <AuthProvider>
           <Navbar />
