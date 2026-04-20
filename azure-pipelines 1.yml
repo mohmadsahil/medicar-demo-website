@@ -1,0 +1,21 @@
+trigger:
+  branches:
+    include:
+      - uat_u
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  # Debug step (optional) to verify connectivity
+  - script: |
+      echo "Triggering deployment webhook for abym-leadmanagement-api..."
+    displayName: "Debug Info"
+
+  # Call deployment webhook
+  - script: |
+      curl -X POST "http://62.72.57.63:3001/deploy" \
+           -H "x-auth-token: SecretToken123" \
+           -H "Content-Type: application/json" \
+           --data '{"service":"abym-leadmanagement"}'
+    displayName: "Call Deployment Webhook"
