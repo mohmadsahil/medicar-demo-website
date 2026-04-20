@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (revokeUrl) {
-      sendConsentRevokeEmail({ name: name.trim(), email: email.toLowerCase() }, revokeUrl).catch((err) => {
-        console.error("[careers] revoke email failed:", err?.message ?? err);
-      });
+      Promise.resolve()
+        .then(() => sendConsentRevokeEmail({ name: name.trim(), email: email.toLowerCase() }, revokeUrl!))
+        .catch((err) => console.error("[careers] revoke email failed:", err?.message ?? err));
     }
 
     return NextResponse.json({ message: "Application submitted. We will be in touch within 3 business days." }, { status: 201 });

@@ -58,9 +58,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (revokeUrl) {
-      sendConsentRevokeEmail({ name: name.trim(), email: email.toLowerCase() }, revokeUrl).catch((err) => {
-        console.error("[register] revoke email failed:", err?.message ?? err);
-      });
+      Promise.resolve()
+        .then(() => sendConsentRevokeEmail({ name: name.trim(), email: email.toLowerCase() }, revokeUrl!))
+        .catch((err) => console.error("[register] revoke email failed:", err?.message ?? err));
     }
 
     const token = signToken({ userId: user._id.toString(), email: user.email, name: user.name });

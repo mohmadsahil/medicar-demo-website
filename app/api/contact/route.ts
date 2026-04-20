@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (revokeUrl) {
-      sendConsentRevokeEmail({ name: name.trim(), email: email.toLowerCase() }, revokeUrl).catch((err) => {
-        console.error("[contact] revoke email failed:", err?.message ?? err);
-      });
+      Promise.resolve()
+        .then(() => sendConsentRevokeEmail({ name: name.trim(), email: email.toLowerCase() }, revokeUrl!))
+        .catch((err) => console.error("[contact] revoke email failed:", err?.message ?? err));
     }
 
     return NextResponse.json({ message: "Message received. We will get back to you within 24 hours." }, { status: 201 });
