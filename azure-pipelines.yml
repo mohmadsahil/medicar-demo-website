@@ -1,5 +1,5 @@
 trigger:
-- uat
+- main
 
 pool:
   vmImage: ubuntu-latest
