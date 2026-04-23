@@ -22,7 +22,8 @@ steps:
     chmod +x node_modules/.bin/vite
     npm run build
   displayName: Install and Build
-
+  env:
+    MONGODB_URI: $(MONGODB_URI)
 - task: CmdLine@2
   inputs:
     script: |
