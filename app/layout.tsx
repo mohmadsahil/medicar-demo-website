@@ -36,7 +36,7 @@ export default function RootLayout({
       >
         <script
           src="https://demo.digitalanumati.com/widget.iife.js"
-          data-token="U2FsdGVkX18pYONFfdu34or0MgoHCy-cx2sqoiHYsI9rPFRwzO8K27FH_chSfngk"
+          data-token="U2FsdGVkX1_wawg65pbdslgmUSsgRPKqVCH90RLde6hTlshtQJQ0OGQC0ubKc1TR"
         ></script>
         <noscript>
           <iframe
