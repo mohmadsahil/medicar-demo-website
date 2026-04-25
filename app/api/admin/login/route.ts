@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-const ADMIN_EMAIL = "demo.admin@gmail.com";
-const ADMIN_PASSWORD = "Digital@9694";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@demo.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "Demo@1234";
 const ADMIN_COOKIE = "admin_token";
 
 export async function POST(req: NextRequest) {

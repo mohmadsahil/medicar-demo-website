@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Image from "next/image";
 import Script from "next/script";
 import ClientLayout from "@/components/ClientLayout";
 
@@ -56,9 +57,13 @@ export default function RootLayout({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
                 <div className="md:col-span-2">
-                  <span className="text-xl font-bold text-white">
-                    Hospital Portal
-                  </span>
+                  <Image
+                    src="/logo.webp"
+                    alt="Hospital Portal"
+                    width={140}
+                    height={40}
+                    className="h-10 w-auto object-contain brightness-0 invert"
+                  />
                   <p className="mt-3 text-sm leading-relaxed max-w-xs">
                     A demo platform for patient appointment workflows,
                     multilingual consent capture, and transparent
