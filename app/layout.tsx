@@ -4,6 +4,7 @@ import "./globals.css";
 import Image from "next/image";
 import Script from "next/script";
 import ClientLayout from "@/components/ClientLayout";
+import FooterNav from "@/components/FooterNav";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -69,67 +70,8 @@ export default function RootLayout({
                     data-processing disclosures.
                   </p>
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-4">
-                    Company
-                  </h4>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <a
-                        href="/"
-                        className="hover:text-white transition-colors"
-                      >
-                        Home
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/consent-demo"
-                        className="hover:text-white transition-colors"
-                      >
-                        Consent Demo
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/contact"
-                        className="hover:text-white transition-colors"
-                      >
-                        Contact
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-4">
-                    Account
-                  </h4>
-                  <ul className="space-y-2 text-sm">
-                    <li>
-                      <a
-                        href="/login"
-                        className="hover:text-white transition-colors"
-                      >
-                        Sign In
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/login"
-                        className="hover:text-white transition-colors"
-                      >
-                        Create Account
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/profile"
-                        className="hover:text-white transition-colors"
-                      >
-                        Profile
-                      </a>
-                    </li>
-                  </ul>
+                <div className="md:col-span-2">
+                  <FooterNav />
                 </div>
               </div>
               <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
