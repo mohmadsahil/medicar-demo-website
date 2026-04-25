@@ -4,14 +4,46 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-type ConsentKey = "terms" | "privacy" | "marketing" | "analytics" | "thirdParty";
+type ConsentKey =
+  | "terms"
+  | "privacy"
+  | "marketing"
+  | "analytics"
+  | "thirdParty";
 
-const consentOptions: { key: ConsentKey; label: string; desc: string; required?: boolean }[] = [
-  { key: "terms", label: "Terms and Conditions", desc: "I agree to the Terms and Conditions of service.", required: true },
-  { key: "privacy", label: "Privacy Policy", desc: "I agree to the collection and processing of my personal data as described in the Privacy Policy.", required: true },
-  { key: "marketing", label: "Marketing Communications", desc: "I consent to receive promotional emails, newsletters, and product updates." },
-  { key: "analytics", label: "Analytics and Performance", desc: "I allow usage of analytics cookies to improve the service." },
-  { key: "thirdParty", label: "Third-Party Integrations", desc: "I consent to sharing anonymised data with trusted third-party partners." },
+const consentOptions: {
+  key: ConsentKey;
+  label: string;
+  desc: string;
+  required?: boolean;
+}[] = [
+  {
+    key: "terms",
+    label: "Terms and Conditions",
+    desc: "I agree to the Terms and Conditions of service.",
+    required: true,
+  },
+  {
+    key: "privacy",
+    label: "Privacy Policy",
+    desc: "I agree to the collection and processing of my personal data as described in the Privacy Policy.",
+    required: true,
+  },
+  {
+    key: "marketing",
+    label: "Marketing Communications",
+    desc: "I consent to receive promotional emails, newsletters, and product updates.",
+  },
+  {
+    key: "analytics",
+    label: "Analytics and Performance",
+    desc: "I allow usage of analytics cookies to improve the service.",
+  },
+  {
+    key: "thirdParty",
+    label: "Third-Party Integrations",
+    desc: "I consent to sharing anonymised data with trusted third-party partners.",
+  },
 ];
 
 export default function ProfilePage() {
@@ -19,12 +51,22 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState({ name: "", phone: "", role: "", company: "", bio: "" });
+  const [draft, setDraft] = useState({
+    name: "",
+    phone: "",
+    role: "",
+    company: "",
+    bio: "",
+  });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
   const [consents, setConsents] = useState<Record<ConsentKey, boolean>>({
-    terms: true, privacy: true, marketing: false, analytics: true, thirdParty: false,
+    terms: true,
+    privacy: true,
+    marketing: false,
+    analytics: true,
+    thirdParty: false,
   });
   const [consentSaved, setConsentSaved] = useState(false);
 
@@ -85,14 +127,17 @@ export default function ProfilePage() {
   }
 
   const joinedDate = new Date(user.createdAt).toLocaleDateString("en-US", {
-    year: "numeric", month: "long",
+    year: "numeric",
+    month: "long",
   });
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-        <p className="text-gray-500 mt-1">Manage your profile and privacy preferences.</p>
+        <p className="text-gray-500 mt-1">
+          Manage your profile and privacy preferences.
+        </p>
       </div>
 
       {/* Profile card */}
@@ -103,9 +148,13 @@ export default function ProfilePage() {
               {user.name.charAt(0)}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {user.name}
+              </h2>
               <p className="text-sm text-gray-500">
-                {user.role ? `${user.role}${user.company ? ` at ${user.company}` : ""}` : user.email}
+                {user.role
+                  ? `${user.role}${user.company ? ` at ${user.company}` : ""}`
+                  : user.email}
               </p>
             </div>
           </div>
@@ -124,19 +173,46 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="form-label">Full Name</label>
-                <input className="form-input" value={draft.name} onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))} />
+                <input
+                  className="form-input"
+                  value={draft.name}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, name: e.target.value }))
+                  }
+                />
               </div>
               <div>
                 <label className="form-label">Phone</label>
-                <input className="form-input" value={draft.phone} onChange={(e) => setDraft((d) => ({ ...d, phone: e.target.value }))} placeholder="+1 (555) 000-0000" />
+                <input
+                  className="form-input"
+                  value={draft.phone}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, phone: e.target.value }))
+                  }
+                  placeholder="+1 (555) 000-0000"
+                />
               </div>
               <div>
                 <label className="form-label">Role / Title</label>
-                <input className="form-input" value={draft.role} onChange={(e) => setDraft((d) => ({ ...d, role: e.target.value }))} placeholder="Software Engineer" />
+                <input
+                  className="form-input"
+                  value={draft.role}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, role: e.target.value }))
+                  }
+                  placeholder="Software Engineer"
+                />
               </div>
               <div>
                 <label className="form-label">Company</label>
-                <input className="form-input" value={draft.company} onChange={(e) => setDraft((d) => ({ ...d, company: e.target.value }))} placeholder="Acme Corp" />
+                <input
+                  className="form-input"
+                  value={draft.company}
+                  onChange={(e) =>
+                    setDraft((d) => ({ ...d, company: e.target.value }))
+                  }
+                  placeholder="Acme Corp"
+                />
               </div>
             </div>
             <div>
@@ -145,12 +221,16 @@ export default function ProfilePage() {
                 className="form-input resize-none"
                 rows={3}
                 value={draft.bio}
-                onChange={(e) => setDraft((d) => ({ ...d, bio: e.target.value }))}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, bio: e.target.value }))
+                }
                 placeholder="Tell us a little about yourself"
               />
             </div>
             {saveError && (
-              <p className="text-red-600 text-sm bg-red-50 border border-red-200 px-3 py-2 rounded-lg">{saveError}</p>
+              <p className="text-red-600 text-sm bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+                {saveError}
+              </p>
             )}
             <div className="flex gap-3">
               <button
@@ -158,10 +238,17 @@ export default function ProfilePage() {
                 disabled={saving}
                 className="btn-primary disabled:opacity-60 flex items-center gap-2"
               >
-                {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                {saving && (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                )}
                 Save Changes
               </button>
-              <button onClick={() => setEditing(false)} className="btn-secondary">Cancel</button>
+              <button
+                onClick={() => setEditing(false)}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         ) : (
@@ -173,13 +260,17 @@ export default function ProfilePage() {
               { label: "Member Since", value: joinedDate },
             ].map(({ label, value }) => (
               <div key={label}>
-                <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">{label}</p>
+                <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">
+                  {label}
+                </p>
                 <p className="text-gray-900 font-medium">{value}</p>
               </div>
             ))}
             {user.bio && (
               <div className="sm:col-span-2">
-                <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">Bio</p>
+                <p className="text-gray-400 text-xs uppercase tracking-wide mb-0.5">
+                  Bio
+                </p>
                 <p className="text-gray-700">{user.bio}</p>
               </div>
             )}
@@ -188,71 +279,36 @@ export default function ProfilePage() {
       </section>
 
       {/* Consent section */}
-      <section className="card mb-8">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-xl font-semibold text-gray-900">Privacy Preferences</h2>
-          {consentSaved && (
+      {(window as any)?.__CMP_CONSENT?.referenceId && (
+        <section className="card mb-8">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Privacy Preferences
+            </h2>
+            {/* {consentSaved && (
             <span className="text-green-600 text-sm font-medium flex items-center gap-1">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               Saved
             </span>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 mb-6">
-          Manage how your data is used. Required consents cannot be revoked while you hold an active account.
-        </p>
+          )} */}
+          </div>
+          <p className="text-sm text-gray-500 mb-6">
+            Manage how your data is used. Required consents cannot be revoked
+            while you hold an active account.
+          </p>
 
-        <div className="space-y-3">
-          {consentOptions.map(({ key, label, desc, required }) => (
-            <div
-              key={key}
-              className={`flex items-start gap-4 p-4 rounded-lg border transition-colors ${
-                consents[key] ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200"
-              }`}
-            >
-              <div className="pt-0.5">
-                <button
-                  role="checkbox"
-                  aria-checked={consents[key]}
-                  aria-label={label}
-                  onClick={() => toggleConsent(key)}
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                    required
-                      ? "cursor-not-allowed border-blue-400 bg-blue-500"
-                      : consents[key]
-                      ? "border-blue-500 bg-blue-500 cursor-pointer"
-                      : "border-gray-300 bg-white cursor-pointer hover:border-blue-400"
-                  }`}
-                >
-                  {consents[key] && (
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="white" viewBox="0 0 12 12">
-                      <path d="M2 6l3 3 5-5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-900">{label}</p>
-                  {required && (
-                    <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">Required</span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <button onClick={saveConsents} className="btn-primary mt-6">Save Preferences</button>
-      </section>
+          <div className="space-y-3" id="consent-detail-root"></div>
+        </section>
+      )}
 
       {/* Danger zone */}
       <section className="card border-red-100">
         <h2 className="text-xl font-semibold text-gray-900 mb-1">Sign Out</h2>
-        <p className="text-sm text-gray-500 mb-4">Sign out of your account on this device.</p>
+        <p className="text-sm text-gray-500 mb-4">
+          Sign out of your account on this device.
+        </p>
         <button
           onClick={logout}
           className="px-5 py-2.5 text-sm font-semibold text-red-600 border border-red-300 hover:bg-red-50 rounded-lg transition-colors"

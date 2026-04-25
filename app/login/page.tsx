@@ -11,9 +11,16 @@ export default function LoginPage() {
   const { user, loading, login, register } = useAuth();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirm: "",
+  });
   const [consentChecked, setConsentChecked] = useState(false);
-  const [errors, setErrors] = useState<Partial<typeof form & { general: string }>>({});
+  const [errors, setErrors] = useState<
+    Partial<typeof form & { general: string }>
+  >({});
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -25,7 +32,8 @@ export default function LoginPage() {
   function validate(): boolean {
     const e: typeof errors = {};
 
-    if (mode === "signup" && !form.name.trim()) e.name = "Full name is required.";
+    if (mode === "signup" && !form.name.trim())
+      e.name = "Full name is required.";
 
     if (!form.email.trim()) {
       e.email = "Email is required.";
@@ -60,7 +68,9 @@ export default function LoginPage() {
 
     try {
       if (mode === "forgot") {
-        setSuccess(`If an account exists for ${form.email}, a reset link has been sent.`);
+        setSuccess(
+          `If an account exists for ${form.email}, a reset link has been sent.`,
+        );
         return;
       }
 
@@ -69,15 +79,26 @@ export default function LoginPage() {
         if (err) {
           setErrors({ general: err });
         } else {
+          if (user?.referenceId) {
+            (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
+          }
           router.push("/profile");
         }
       } else {
         const consentId = localStorage.getItem("da_consent_id") ?? "";
-        const err = await register(form.name, form.email, form.password, consentId);
+        const err = await register(
+          form.name,
+          form.email,
+          form.password,
+          consentId,
+        );
         if (err) {
           setErrors({ general: err });
         } else {
-          router.push("/profile");
+          if (user?.referenceId) {
+            (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
+          }
+          router.push("/");
         }
       }
     } finally {
@@ -120,7 +141,9 @@ export default function LoginPage() {
           <Link href="/" className="text-2xl font-extrabold text-blue-600">
             demo
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-4">{titles[mode]}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mt-4">
+            {titles[mode]}
+          </h1>
           <p className="text-gray-500 text-sm mt-1">{subtitles[mode]}</p>
         </div>
 
@@ -128,13 +151,26 @@ export default function LoginPage() {
           {success ? (
             <div className="text-center py-6">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
               <p className="text-gray-800 font-medium">{success}</p>
               <button
-                onClick={() => { setSuccess(""); switchMode("login"); }}
+                onClick={() => {
+                  setSuccess("");
+                  switchMode("login");
+                }}
                 className="mt-6 btn-primary"
               >
                 Back to Sign In
@@ -144,38 +180,52 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {mode === "signup" && (
                 <div>
-                  <label className="form-label" htmlFor="l-name">Full Name</label>
+                  <label className="form-label" htmlFor="l-name">
+                    Full Name
+                  </label>
                   <input
                     id="l-name"
                     type="text"
                     className={`form-input ${errors.name ? "border-red-400" : ""}`}
                     placeholder="Jane Smith"
                     value={form.name}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, name: e.target.value }))
+                    }
                     autoComplete="name"
                   />
-                  {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                  )}
                 </div>
               )}
 
               <div>
-                <label className="form-label" htmlFor="l-email">Email Address</label>
+                <label className="form-label" htmlFor="l-email">
+                  Email Address
+                </label>
                 <input
                   id="l-email"
                   type="email"
                   className={`form-input ${errors.email ? "border-red-400" : ""}`}
                   placeholder="jane@company.com"
                   value={form.email}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, email: e.target.value }))
+                  }
                   autoComplete="email"
                 />
-                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
               </div>
 
               {mode !== "forgot" && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="form-label mb-0" htmlFor="l-password">Password</label>
+                    <label className="form-label mb-0" htmlFor="l-password">
+                      Password
+                    </label>
                     {mode === "login" && (
                       <button
                         type="button"
@@ -191,47 +241,93 @@ export default function LoginPage() {
                       id="l-password"
                       type={showPassword ? "text" : "password"}
                       className={`form-input pr-10 ${errors.password ? "border-red-400" : ""}`}
-                      placeholder={mode === "signup" ? "Minimum 8 characters" : "Enter your password"}
+                      placeholder={
+                        mode === "signup"
+                          ? "Minimum 8 characters"
+                          : "Enter your password"
+                      }
                       value={form.password}
-                      onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                      autoComplete={mode === "login" ? "current-password" : "new-password"}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, password: e.target.value }))
+                      }
+                      autoComplete={
+                        mode === "login" ? "current-password" : "new-password"
+                      }
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((s) => !s)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                          />
                         </svg>
                       ) : (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
                         </svg>
                       )}
                     </button>
                   </div>
-                  {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
               )}
 
-
               {mode === "signup" && (
                 <div>
-                  <label className="form-label" htmlFor="l-confirm">Confirm Password</label>
+                  <label className="form-label" htmlFor="l-confirm">
+                    Confirm Password
+                  </label>
                   <input
                     id="l-confirm"
                     type={showPassword ? "text" : "password"}
                     className={`form-input ${errors.confirm ? "border-red-400" : ""}`}
                     placeholder="Re-enter your password"
                     value={form.confirm}
-                    onChange={(e) => setForm((f) => ({ ...f, confirm: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, confirm: e.target.value }))
+                    }
                     autoComplete="new-password"
                   />
-                  {errors.confirm && <p className="text-red-500 text-xs mt-1">{errors.confirm}</p>}
+                  {errors.confirm && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.confirm}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -244,7 +340,8 @@ export default function LoginPage() {
                     onChange={(e) => setConsentChecked(e.target.checked)}
                   />
                   <span className="text-sm text-gray-600">
-                    I confirm that I have reviewed and agree to the data consent associated with this registration.
+                    I confirm that I have reviewed and agree to the data consent
+                    associated with this registration.
                   </span>
                 </label>
               )}
@@ -263,7 +360,11 @@ export default function LoginPage() {
                 {submitting && (
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 )}
-                {mode === "login" ? "Sign In" : mode === "signup" ? "Create Account" : "Send Reset Link"}
+                {mode === "login"
+                  ? "Sign In"
+                  : mode === "signup"
+                    ? "Create Account"
+                    : "Send Reset Link"}
               </button>
             </form>
           )}
@@ -274,14 +375,20 @@ export default function LoginPage() {
             {mode === "login" ? (
               <>
                 Do not have an account?{" "}
-                <button onClick={() => switchMode("signup")} className="text-blue-600 font-medium hover:underline">
+                <button
+                  onClick={() => switchMode("signup")}
+                  className="text-blue-600 font-medium hover:underline"
+                >
                   Sign up
                 </button>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <button onClick={() => switchMode("login")} className="text-blue-600 font-medium hover:underline">
+                <button
+                  onClick={() => switchMode("login")}
+                  className="text-blue-600 font-medium hover:underline"
+                >
                   Sign in
                 </button>
               </>

@@ -2,30 +2,65 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-const publicLinks = [
+const publicLinks: Array<{
+  href: string;
+  label: string;
+  requiresConsentReference?: boolean;
+}> = [
   { href: "/", label: "Home" },
-  { href: "/careers", label: "Careers" },
+  {
+    href: "/consent-info",
+    label: "Consent Info",
+    requiresConsentReference: true,
+  },
   { href: "/contact", label: "Contact" },
 ];
+
+const authenticatedLinks: Array<{
+  href: string;
+  label: string;
+}> = [{ href: "/book-demo-appointment", label: "Book Appointment" }];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasConsentReference, setHasConsentReference] = useState(false);
   const { user, loading, logout } = useAuth();
+
+  useEffect(() => {
+    const checkConsentReference = () => {
+      const referenceId = (
+        window as { __CMP_CONFIG?: { referenceId?: string } }
+      ).__CMP_CONFIG?.referenceId;
+      setHasConsentReference(Boolean(referenceId));
+    };
+
+    checkConsentReference();
+    const intervalId = window.setInterval(checkConsentReference, 200);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const visiblePublicLinks = publicLinks.filter(
+    (link) => !link.requiresConsentReference || hasConsentReference,
+  );
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="text-xl font-bold text-blue-600 tracking-tight">
-            DEMO
+          <Link
+            href="/"
+            className="text-xl font-bold text-blue-600 tracking-tight"
+          >
+            Hospital Portal
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
-            {publicLinks.map(({ href, label }) => (
+            {visiblePublicLinks.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -38,6 +73,20 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
+            {user &&
+              authenticatedLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
+                    pathname === href
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
           </div>
 
           <div className="hidden md:flex items-center gap-2">
@@ -80,11 +129,26 @@ export default function Navbar() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {menuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -92,20 +156,37 @@ export default function Navbar() {
 
         {menuOpen && (
           <div className="md:hidden pb-4 border-t border-gray-100 pt-2 space-y-1">
-            {publicLinks.map(({ href, label }) => (
+            {visiblePublicLinks.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMenuOpen(false)}
                 className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  pathname === href ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+                  pathname === href
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
                 {label}
               </Link>
             ))}
-            {!loading && (
-              user ? (
+            {user &&
+              authenticatedLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    pathname === href
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  {label}
+                </Link>
+              ))}
+            {!loading &&
+              (user ? (
                 <>
                   <Link
                     href="/profile"
@@ -115,7 +196,10 @@ export default function Navbar() {
                     My Profile
                   </Link>
                   <button
-                    onClick={() => { setMenuOpen(false); logout(); }}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      logout();
+                    }}
                     className="block w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50"
                   >
                     Sign Out
@@ -129,8 +213,7 @@ export default function Navbar() {
                 >
                   Sign In
                 </Link>
-              )
-            )}
+              ))}
           </div>
         )}
       </div>

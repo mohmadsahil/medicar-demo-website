@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 
 interface User {
@@ -12,13 +18,19 @@ interface User {
   company?: string;
   bio?: string;
   createdAt: string;
+  referenceId?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<string | null>;
-  register: (name: string, email: string, password: string, consentId: string) => Promise<string | null>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    consentId: string,
+  ) => Promise<string | null>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -48,7 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 
-  async function login(email: string, password: string): Promise<string | null> {
+  async function login(
+    email: string,
+    password: string,
+  ): Promise<string | null> {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -60,7 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  async function register(name: string, email: string, password: string, consentId: string): Promise<string | null> {
+  async function register(
+    name: string,
+    email: string,
+    password: string,
+    consentId: string,
+  ): Promise<string | null> {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -79,7 +99,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

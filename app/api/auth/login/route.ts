@@ -9,26 +9,44 @@ export async function POST(req: NextRequest) {
     const { email, password } = await req.json();
 
     if (!email?.trim() || !password) {
-      return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email and password are required." },
+        { status: 400 },
+      );
     }
 
     await connectDB();
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid email or password." },
+        { status: 401 },
+      );
     }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid email or password." },
+        { status: 401 },
+      );
     }
 
-    const token = signToken({ userId: user._id.toString(), email: user.email, name: user.name });
+    const token = signToken({
+      userId: user._id.toString(),
+      email: user.email,
+      name: user.name,
+    });
 
     const response = NextResponse.json({
       message: "Login successful.",
-      user: { id: user._id, name: user.name, email: user.email },
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        referenceId: user.consentId,
+      },
     });
 
     response.cookies.set(COOKIE_NAME_EXPORT, token, {
@@ -42,6 +60,9 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (err) {
     console.error("[login]", err);
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error." },
+      { status: 500 },
+    );
   }
 }

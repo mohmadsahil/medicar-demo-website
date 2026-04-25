@@ -11,7 +11,7 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
-  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(true);
   const [consentError, setConsentError] = useState("");
 
   function validate(): boolean {
@@ -177,7 +177,7 @@ export default function ContactPage() {
                 {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
               </div>
 
-              <label className="flex items-start gap-3 cursor-pointer">
+              {/* <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600"
@@ -188,7 +188,7 @@ export default function ContactPage() {
                   I confirm that I have reviewed and agree to the data consent associated with this message.
                 </span>
               </label>
-              {consentError && <p className="text-red-500 text-xs -mt-2">{consentError}</p>}
+              {consentError && <p className="text-red-500 text-xs -mt-2">{consentError}</p>} */}
 
               {serverError && (
                 <div className="text-red-700 text-sm bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
