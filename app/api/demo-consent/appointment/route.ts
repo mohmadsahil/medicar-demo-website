@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import HospitalConsentSubmission from "@/models/HospitalConsentSubmission";
+import User from "@/models/User";
 import { hospitalConsentTemplate } from "@/lib/hospitalConsentTemplate";
 import { verifyDigitalAnumatiConsent } from "@/lib/digitalAnumati";
 import { sendConsentRevokeEmail } from "@/lib/email";
+import { getAuthUser } from "@/lib/auth";
 
 interface AppointmentRequest {
   patientName: string;
@@ -100,9 +102,21 @@ export async function POST(req: NextRequest) {
     let consentRecordId: string | undefined;
     let referenceId: string | undefined;
 
+    await connectDB();
+
+    const authUser = await getAuthUser();
+    const loggedInUser = authUser?.userId
+      ? await User.findById(authUser.userId)
+      : null;
+
     if (body.consentId?.trim()) {
       try {
-        referenceId = `${crypto.randomUUID()}${Date.now()}`;
+        if (loggedInUser?.referenceId) {
+          referenceId = loggedInUser.referenceId;
+        } else {
+          referenceId = `${crypto.randomUUID()}${Date.now()}`;
+        }
+
         const consentResponse = await verifyDigitalAnumatiConsent(
           body.consentId.trim(),
           referenceId,
@@ -115,6 +129,10 @@ export async function POST(req: NextRequest) {
         revokeUrl = consentResponse?.data?.revokeUrl;
         consentUserId = consentResponse?.data?.userId;
         consentRecordId = consentResponse?.data?.consentRecordId;
+
+        if (loggedInUser && !loggedInUser.referenceId) {
+          await User.findByIdAndUpdate(loggedInUser._id, { referenceId });
+        }
       } catch (err) {
         console.error(
           "[demo-consent/appointment] consent verify failed (non-blocking):",
@@ -122,8 +140,6 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-
-    await connectDB();
     const record = await HospitalConsentSubmission.create({
       ...body,
       patientName: body.patientName.trim(),

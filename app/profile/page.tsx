@@ -279,7 +279,7 @@ export default function ProfilePage() {
       </section>
 
       {/* Consent section */}
-      {(window as any)?.__CMP_CONSENT?.referenceId && (
+      {(window as any)?.__CMP_CONFIG?.referenceId && (
         <section className="card mb-8">
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-xl font-semibold text-gray-900">

@@ -1,9 +1,9 @@
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import { AuthProvider } from "@/context/AuthContext";
 import Script from "next/script";
+import ClientLayout from "@/components/ClientLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -50,8 +50,7 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
-        <AuthProvider>
-          <Navbar />
+        <ClientLayout>
           <main>{children}</main>
           <footer className="bg-gray-900 text-gray-400 mt-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -77,14 +76,6 @@ export default function RootLayout({
                         className="hover:text-white transition-colors"
                       >
                         Home
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/consent-info"
-                        className="hover:text-white transition-colors"
-                      >
-                        Consent Info
                       </a>
                     </li>
                     <li>
@@ -153,7 +144,7 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
-        </AuthProvider>
+        </ClientLayout>
       </body>
     </html>
   );

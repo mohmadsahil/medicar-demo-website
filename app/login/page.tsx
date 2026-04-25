@@ -76,12 +76,11 @@ export default function LoginPage() {
 
       if (mode === "login") {
         const err = await login(form.email, form.password);
+        // console.log("user ----> ", user);
+
         if (err) {
           setErrors({ general: err });
         } else {
-          if (user?.referenceId) {
-            (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
-          }
           router.push("/profile");
         }
       } else {
@@ -95,9 +94,9 @@ export default function LoginPage() {
         if (err) {
           setErrors({ general: err });
         } else {
-          if (user?.referenceId) {
-            (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
-          }
+          // if (user?.referenceId) {
+          //   (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
+          // }
           router.push("/");
         }
       }
@@ -105,6 +104,12 @@ export default function LoginPage() {
       setSubmitting(false);
     }
   }
+
+  useEffect(() => {
+    if (user?.referenceId) {
+      (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
+    }
+  }, [user]);
 
   function switchMode(m: Mode) {
     setMode(m);

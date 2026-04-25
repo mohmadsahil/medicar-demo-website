@@ -11,11 +11,6 @@ const publicLinks: Array<{
   requiresConsentReference?: boolean;
 }> = [
   { href: "/", label: "Home" },
-  {
-    href: "/consent-info",
-    label: "Consent Info",
-    requiresConsentReference: true,
-  },
   { href: "/contact", label: "Contact" },
 ];
 

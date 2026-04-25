@@ -60,6 +60,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser().finally(() => setLoading(false));
   }, [refreshUser]);
 
+  useEffect(() => {
+    if (user?.referenceId) {
+       console.log("referenceId", user);
+      (window as any).__CMP_CONFIG = { referenceId: user.referenceId };
+    }
+  }, [user]);
+
   async function login(
     email: string,
     password: string,

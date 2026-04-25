@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 type AppointmentForm = {
   patientName: string;
@@ -61,10 +62,22 @@ const initialForm: AppointmentForm = {
 };
 
 export default function AppointmentBookingPage() {
+  const { user } = useAuth();
   const [form, setForm] = useState<AppointmentForm>(initialForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        patientName: user.name || prev.patientName,
+        phone: user.phone || prev.phone,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
 
   function setField<K extends keyof AppointmentForm>(
     key: K,
@@ -149,9 +162,10 @@ export default function AppointmentBookingPage() {
             <div>
               <label className="form-label">Patient Name *</label>
               <input
-                className="form-input"
+                className="form-input disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                 value={form.patientName}
                 onChange={(e) => setField("patientName", e.target.value)}
+                disabled={!!user?.name}
                 required
               />
             </div>
@@ -200,9 +214,10 @@ export default function AppointmentBookingPage() {
             <div>
               <label className="form-label">Phone Number *</label>
               <input
-                className="form-input"
+                className="form-input disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                 value={form.phone}
                 onChange={(e) => setField("phone", e.target.value)}
+                disabled={!!user?.phone}
                 required
               />
             </div>
@@ -210,9 +225,10 @@ export default function AppointmentBookingPage() {
               <label className="form-label">Email Address *</label>
               <input
                 type="email"
-                className="form-input"
+                className="form-input disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                 value={form.email}
                 onChange={(e) => setField("email", e.target.value)}
+                disabled={!!user?.email}
                 required
               />
             </div>

@@ -31,27 +31,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let revokeUrl: string | undefined;
-    let consentUserId: string | undefined;
-    let consentRecordId: string | undefined;
-    let referenceId: string | undefined;
-
-    if (consentId?.trim()) {
-      try {
-        referenceId = `${crypto.randomUUID()}${Date.now()}`;
-        const consentResponse = await verifyDigitalAnumatiConsent(
-          consentId.trim(),
-          referenceId,
-          email.toLowerCase(),
-        );
-        console.log("[register] verifyDigitalAnumatiConsent", consentResponse);
-        revokeUrl = consentResponse?.data?.revokeUrl;
-        consentUserId = consentResponse?.data?.userId;
-        consentRecordId = consentResponse?.data?.consentRecordId;
-      } catch (err) {
-        console.error("[register] consent verify failed (non-blocking):", err);
-      }
-    }
+    const referenceId = `${crypto.randomUUID()}${Date.now()}`;
 
     await connectDB();
 
@@ -69,23 +49,42 @@ export async function POST(req: NextRequest) {
       email: email.toLowerCase(),
       password: hashed,
       consentId: consentId?.trim(),
-      consentUserId,
-      consentRecordId,
       referenceId,
-      revokeUrl,
     });
 
-    if (revokeUrl) {
-      Promise.resolve()
-        .then(() =>
-          sendConsentRevokeEmail(
-            { name: name.trim(), email: email.toLowerCase() },
-            revokeUrl!,
-          ),
-        )
-        .catch((err) =>
-          console.error("[register] revoke email failed:", err?.message ?? err),
+    if (consentId?.trim()) {
+      try {
+        const consentResponse = await verifyDigitalAnumatiConsent(
+          consentId.trim(),
+          referenceId,
+          email.toLowerCase(),
         );
+        console.log("[register] verifyDigitalAnumatiConsent", consentResponse);
+        const revokeUrl = consentResponse?.data?.revokeUrl;
+        const consentUserId = consentResponse?.data?.userId;
+        const consentRecordId = consentResponse?.data?.consentRecordId;
+
+        await User.findByIdAndUpdate(user._id, {
+          revokeUrl,
+          consentUserId,
+          consentRecordId,
+        });
+
+        if (revokeUrl) {
+          Promise.resolve()
+            .then(() =>
+              sendConsentRevokeEmail(
+                { name: name.trim(), email: email.toLowerCase() },
+                revokeUrl!,
+              ),
+            )
+            .catch((err) =>
+              console.error("[register] revoke email failed:", err?.message ?? err),
+            );
+        }
+      } catch (err) {
+        console.error("[register] consent verify failed (non-blocking):", err);
+      }
     }
 
     const token = signToken({

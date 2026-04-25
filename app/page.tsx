@@ -1,4 +1,8 @@
+"use client";
+
+import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
+import { useEffect } from "react";
 
 const departments = [
   {
@@ -28,6 +32,7 @@ const consentHighlights = [
 ];
 
 export default function HomePage() {
+ 
   return (
     <>
       <section className="relative overflow-hidden bg-gradient-to-br from-cyan-900 via-teal-800 to-emerald-800 text-white">

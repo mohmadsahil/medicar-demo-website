@@ -33,6 +33,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!user.referenceId) {
+      const referenceId = `${crypto.randomUUID()}${Date.now()}`;
+      await User.findByIdAndUpdate(user._id, { referenceId });
+      user.referenceId = referenceId;
+    }
+
     const token = signToken({
       userId: user._id.toString(),
       email: user.email,
@@ -45,7 +51,7 @@ export async function POST(req: NextRequest) {
         id: user._id,
         name: user.name,
         email: user.email,
-        referenceId: user.consentId,
+        referenceId: user.referenceId,
       },
     });
 
