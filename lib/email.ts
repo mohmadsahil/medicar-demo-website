@@ -95,7 +95,7 @@ function consentRevokeHtml(name: string, revokeUrl: string): string {
                   <td style="background:linear-gradient(135deg,#0f766e 0%,#047857 100%);border-radius:10px;box-shadow:0 4px 14px rgba(15,118,110,0.35);">
                     <a href="${revokeUrl}"
                        style="display:inline-block;padding:15px 36px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;letter-spacing:0.01em;">
-                      &#128683;&nbsp; Revoke My Consent
+                      &#128683;&nbsp; Manage Consent
                     </a>
                   </td>
                 </tr>
