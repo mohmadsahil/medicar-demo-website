@@ -38,7 +38,7 @@ function consentRevokeHtml(name: string, revokeUrl: string): string {
                     <table cellpadding="0" cellspacing="0">
                       <tr>
                         <td>
-                          <img src="${process.env.NEXT_PUBLIC_BASE_URL ?? "https://demo-web.digitalanumati.com"}/logo.webp" alt="Hospital Portal" width="160" height="48" style="display:block;height:48px;width:auto;object-fit:contain;" />
+                          <img src="${"https://demo-web.digitalanumati.com"}/logo.webp" alt="Hospital Portal" width="160" height="48" style="display:block;height:48px;width:auto;object-fit:contain;" />
                         </td>
                       </tr>
                     </table>
@@ -126,7 +126,7 @@ function consentRevokeHtml(name: string, revokeUrl: string): string {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <img src="${process.env.NEXT_PUBLIC_BASE_URL ?? "https://demo-web.digitalanumati.com"}/logo.webp" alt="Hospital Portal" width="100" height="30" style="display:block;height:30px;width:auto;object-fit:contain;margin-bottom:8px;" />
+                    <img src="${"https://demo-web.digitalanumati.com"}/logo.webp" alt="Hospital Portal" width="100" height="30" style="display:block;height:30px;width:auto;object-fit:contain;margin-bottom:8px;" />
                     <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;line-height:1.6;">
                       This email was sent because you submitted a consent form on our Hospital Portal.<br/>
                       If you did not take this action, you can safely ignore this email.
@@ -150,7 +150,7 @@ function consentRevokeHtml(name: string, revokeUrl: string): string {
 
 export async function sendConsentRevokeEmail(
   user: { name: string; email: string },
-  revokeUrl: string
+  revokeUrl: string,
 ): Promise<void> {
   await transporter.sendMail({
     from: `"Hospital Portal" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
