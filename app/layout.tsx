@@ -42,6 +42,7 @@ export default function RootLayout({
           data-target-id="consent-detail-root"
           consent-color="#145260"
           data-token="U2FsdGVkX1_lcP5OgT-_9AAsaoTkQrgi9dirQwWFLCTSJp1DLucg5YUThAS-I9qv"
+          data-consent-id="U2FsdGVkX19-PIZWz_0nW4qr8-CQP81Y-rDD6Q59VSAFrZijLLWhuvKoVbZChfjavcSJSiC8tvEOvk_7ZoKTVNvpsunk8Gt1ASTIkCsF5ZyPfERriB2xRuZKTLjtxqlqTn42uEetJgHy5fhSNNq1_UDZpgkHYZIdkUpg8ylzGnEpV4-eC922t34DgbXJPPNZv66D1PPlkvdPKUVJYM8Hsy_lJYNU90UmppQ-gJYVCNhJNFYh5Scsp0dCMuIViF6Whv8zL4s73enzO5fsT7MHjw"
         ></script>
         <noscript>
           <iframe
