@@ -1,0 +1,25 @@
+trigger:
+- dev
+pool:
+  vmImage: ubuntu-latest
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Install Node.js'
+- script: |
+    npm install --force
+    npm run build
+  displayName: 'npm install and build'
+- task: CmdLine@2
+  inputs:
+    script: |
+      mkdir -p $(Build.ArtifactStagingDirectory)/artifact
+      rsync -av \
+        --exclude='azure-pipelines.yml' \
+        . $(Build.ArtifactStagingDirectory)/artifact/
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/artifact'
+    publishLocation: 'pipeline'
+    artifactName: 'drop'
