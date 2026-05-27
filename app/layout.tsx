@@ -1,17 +1,28 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Image from "next/image";
-import Script from "next/script";
-import ClientLayout from "@/components/ClientLayout";
-import FooterNav from "@/components/FooterNav";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ConsentProvider } from "@/contexts/ConsentContext";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Hospital Portal - Consent Management Demo",
+  title: {
+    default: "MediCare Plus Hospital — Mumbai | Multi-Specialty Healthcare",
+    template: "%s | MediCare Plus Hospital",
+  },
   description:
-    "Hospital-style demo platform for appointment and healthcare consent workflows.",
+    "MediCare Plus is a NABH-accredited multi-specialty hospital in Mumbai offering world-class care in Cardiology, Neurology, Oncology, Orthopedics, and more. DPDP Act 2023 compliant.",
+  keywords: [
+    "hospital",
+    "multi-specialty",
+    "Mumbai",
+    "healthcare",
+    "NABH",
+    "doctors",
+  ],
 };
 
 export default function RootLayout({
@@ -20,78 +31,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
-        {/* Google Tag Manager */}
-        <Script id="gtm-script" strategy="afterInteractive">
-          {`
-        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id=GTM-TPDNB3HH'+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','GTM-TPDNB3HH');
-      `}
-        </Script>
-      </head>
-      <body
-        className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen`}
-      >
         <script
-          src="https://consent-management-uat.abym.us/widget.iife.js"
-          data-view="consent-detail"
-          data-target-id="consent-detail-root"
-          consent-color="#145260"
-          data-token="U2FsdGVkX1_lcP5OgT-_9AAsaoTkQrgi9dirQwWFLCTSJp1DLucg5YUThAS-I9qv"
-          data-consent-id="U2FsdGVkX19-PIZWz_0nW4qr8-CQP81Y-rDD6Q59VSAFrZijLLWhuvKoVbZChfjavcSJSiC8tvEOvk_7ZoKTVNvpsunk8Gt1ASTIkCsF5ZyPfERriB2xRuZKTLjtxqlqTn42uEetJgHy5fhSNNq1_UDZpgkHYZIdkUpg8ylzGnEpV4-eC922t34DgbXJPPNZv66D1PPlkvdPKUVJYM8Hsy_lJYNU90UmppQ-gJYVCNhJNFYh5Scsp0dCMuIViF6Whv8zL4s73enzO5fsT7MHjw"
+          src="http://localhost:4173/anumati-blocker.js"
+          data-application-id="38eca615-3c07-42fb-95af-25a93636f444"
         ></script>
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-TPDNB3HH"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-        <ClientLayout>
-          <main>{children}</main>
-          <footer className="bg-gray-900 text-gray-400 mt-16">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-                <div className="md:col-span-2">
-                  <Image
-                    src="/logo.webp"
-                    alt="Hospital Portal"
-                    width={140}
-                    height={40}
-                    className="h-10 w-auto object-contain brightness-0 invert"
-                  />
-                  <p className="mt-3 text-sm leading-relaxed max-w-xs">
-                    A demo platform for patient appointment workflows,
-                    multilingual consent capture, and transparent
-                    data-processing disclosures.
-                  </p>
-                </div>
-                <div className="md:col-span-2">
-                  <FooterNav />
-                </div>
-              </div>
-              <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <p>
-                  © {new Date().getFullYear()} Digital Anumati Hospital Portal
-                  Demo. All rights reserved.
-                </p>
-                <div className="flex gap-4">
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                </div>
-              </div>
-            </div>
-          </footer>
-        </ClientLayout>
+      </head>
+      <body className="min-h-screen flex flex-col font-sans antialiased bg-gray-50 text-gray-900">
+        <script
+          src="http://localhost:4173/anumati-dpdp-consent-v1.js"
+           data-application-id="38eca615-3c07-42fb-95af-25a93636f444"
+        ></script>
+        <AuthProvider>
+          <ConsentProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ConsentProvider>
+        </AuthProvider>
       </body>
     </html>
   );

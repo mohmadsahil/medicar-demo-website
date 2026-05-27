@@ -1,8 +1,18 @@
-import { NextResponse } from "next/server";
-import { COOKIE_NAME_EXPORT } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { connectDB } from "@/lib/mongodb";
+import RefreshToken from "@/models/RefreshToken";
 
-export async function POST() {
-  const response = NextResponse.json({ message: "Logged out." });
-  response.cookies.set(COOKIE_NAME_EXPORT, "", { maxAge: 0, path: "/" });
-  return response;
+export async function POST(req: NextRequest) {
+  const token = req.cookies.get("refresh_token")?.value;
+
+  if (token) {
+    await connectDB();
+    const hash = crypto.createHash("sha256").update(token).digest("hex");
+    await RefreshToken.deleteOne({ tokenHash: hash });
+  }
+
+  const res = NextResponse.json({ message: "Logged out" });
+  res.cookies.delete("refresh_token");
+  return res;
 }

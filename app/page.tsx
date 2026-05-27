@@ -1,179 +1,179 @@
-"use client";
-
-import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { useEffect } from "react";
+import { Heart, Brain, Bone, Baby, FlaskConical, Microscope, Calendar, Phone, Star, Shield, Award, Users } from "lucide-react";
 
-const departments = [
-  {
-    title: "Cardiology",
-    desc: "Advanced heart diagnostics, non-invasive imaging, and post-procedure monitoring.",
-  },
-  {
-    title: "Neurology",
-    desc: "Comprehensive stroke care, neuro consults, and long-term recovery management.",
-  },
-  {
-    title: "Orthopedics",
-    desc: "Joint care, trauma response, and rehabilitation pathways for all age groups.",
-  },
-  {
-    title: "General Medicine",
-    desc: "Primary consultations, preventive health packages, and chronic condition support.",
-  },
+const DEPARTMENTS = [
+  { name: "Cardiology", icon: Heart, slug: "cardiology", desc: "Advanced cardiac care & interventions" },
+  { name: "Neurology", icon: Brain, slug: "neurology", desc: "Comprehensive brain & spine care" },
+  { name: "Orthopedics", icon: Bone, slug: "orthopedics", desc: "Joint replacement & sports medicine" },
+  { name: "Pediatrics", icon: Baby, slug: "pediatrics", desc: "Expert care for children 0–18 years" },
+  { name: "Oncology", icon: FlaskConical, slug: "oncology", desc: "Cancer diagnosis & treatment center" },
+  { name: "Pathology", icon: Microscope, slug: "pathology", desc: "Advanced diagnostics & lab services" },
 ];
 
-const consentHighlights = [
-  "Anonymous consent scenario with multilingual support (English and Hindi).",
-  "Required categories for Core Healthcare and Billing & Insurance.",
-  "Optional Communication & Engagement consent for follow-ups and reminders.",
-  "Processing, storage, analysis, and third-party sharing transparency.",
-  "7-year retention disclosure and DPO grievance contact visibility.",
+const STATS = [
+  { value: "25,000+", label: "Patients Annually", icon: Users },
+  { value: "150+", label: "Expert Doctors", icon: Award },
+  { value: "98%", label: "Patient Satisfaction", icon: Star },
+  { value: "24/7", label: "Emergency Care", icon: Phone },
+];
+
+const SERVICES = [
+  "Advanced Cardiac Surgery", "Robotic Joint Replacement", "Cancer Care Center",
+  "Neonatal ICU", "Neuro ICU", "Digital Radiology & MRI",
+  "Bone Marrow Transplant", "Organ Transplant Program",
 ];
 
 export default function HomePage() {
- 
   return (
-    <>
-      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-900 via-teal-800 to-emerald-800 text-white">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="max-w-3xl">
-            <p className="inline-flex items-center gap-2 bg-white/15 border border-white/30 rounded-full px-3 py-1 text-xs uppercase tracking-[0.2em] text-cyan-50 mb-5">
-              Hospital Website Demo
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              Patient-first hospital portal with
-              <span className="text-emerald-200">
-                {" "}
-                consent-first data handling
-              </span>
+    <div>
+      {/* Hero */}
+      <section className="relative bg-gradient-to-br from-sky-700 via-sky-600 to-teal-600 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 py-24 relative">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-sm font-medium mb-6">
+              <Shield size={14} /> NABH Accredited · JCI Certified · DPDP Act 2023 Compliant
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+              Compassionate Care.<br />
+              <span className="text-teal-200">Advanced Medicine.</span>
             </h1>
-            <p className="mt-5 text-lg text-cyan-50 max-w-2xl">
-              Explore a full consent management journey for patient appointment
-              booking, healthcare delivery, billing, and optional engagement
-              communication.
+            <p className="text-lg text-sky-100 mb-8 leading-relaxed">
+              MediCare Plus Hospital — Mumbai&apos;s premier multi-specialty healthcare destination.
+              Expert doctors, cutting-edge technology, and a commitment to your complete well-being.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/book-demo-appointment"
-                className="bg-white text-teal-800 hover:bg-cyan-50 font-semibold px-6 py-3 rounded-lg text-center"
+                href="/appointments/book"
+                className="inline-flex items-center justify-center gap-2 bg-white text-sky-700 px-8 py-3.5 rounded-xl font-bold text-base shadow-lg hover:bg-sky-50 transition-colors"
               >
-                Book Demo Appointment
+                <Calendar size={18} /> Book Appointment
               </Link>
               <Link
-                href="/contact"
-                className="border border-white/50 text-white hover:bg-white/10 font-semibold px-6 py-3 rounded-lg text-center"
+                href="/doctors"
+                className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white px-8 py-3.5 rounded-xl font-bold text-base hover:bg-white/10 transition-colors"
               >
-                Contact Care Team
+                Find a Doctor
               </Link>
+              <a
+                href="tel:18006837587"
+                className="inline-flex items-center justify-center gap-2 bg-red-500 text-white px-8 py-3.5 rounded-xl font-bold text-base hover:bg-red-600 transition-colors"
+              >
+                <Phone size={18} /> Emergency
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[
-            { value: "24x7", label: "Emergency Triage" },
-            { value: "7y", label: "Retention Disclosure" },
-            { value: "3", label: "Consent Categories" },
-            { value: "2", label: "Languages Enabled" },
-          ].map((stat) => (
-            <div key={stat.label} className="card border-l-4 border-l-teal-600">
-              <p className="text-3xl font-bold text-teal-700">{stat.value}</p>
-              <p className="text-sm text-slate-500 mt-1">{stat.label}</p>
+      {/* Stats */}
+      <section className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {STATS.map(({ value, label, icon: Icon }) => (
+            <div key={label} className="text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-sky-50 rounded-xl mb-3">
+                <Icon size={22} className="text-sky-600" />
+              </div>
+              <div className="text-3xl font-bold text-gray-900">{value}</div>
+              <div className="text-sm text-gray-500 mt-1">{label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="bg-white py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold text-slate-900">
-              Hospital Services
-            </h2>
-            <p className="text-slate-500 mt-2 text-lg max-w-2xl">
-              Structured like a modern hospital website with specialty
-              departments and digital appointment workflows.
+      {/* Departments */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Our Specialties</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              15 specialty departments staffed by over 150 experienced doctors delivering care across every stage of life.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {departments.map((dept) => (
-              <div
-                key={dept.title}
-                className="card hover:shadow-md transition-shadow border border-slate-200"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {DEPARTMENTS.map(({ name, icon: Icon, slug, desc }) => (
+              <Link
+                key={slug}
+                href={`/departments/${slug}`}
+                className="bg-white rounded-xl p-6 border border-gray-100 hover:border-sky-200 hover:shadow-md transition-all group"
               >
-                <h3 className="text-lg font-semibold text-slate-900">
-                  {dept.title}
-                </h3>
-                <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                  {dept.desc}
-                </p>
+                <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-sky-100 transition-colors">
+                  <Icon size={22} className="text-sky-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">{name}</h3>
+                <p className="text-sm text-gray-500">{desc}</p>
+                <div className="mt-4 text-sky-600 text-sm font-medium group-hover:translate-x-1 transition-transform inline-block">
+                  Learn more →
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <Link href="/departments" className="text-sky-600 font-semibold hover:underline">
+              View all 15 departments →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Services */}
+      <section className="py-20 bg-sky-700 text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-3">Advanced Services</h2>
+            <p className="text-sky-200 max-w-xl mx-auto">State-of-the-art medical technologies and procedures.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {SERVICES.map((s) => (
+              <div key={s} className="bg-white/10 backdrop-blur rounded-xl px-5 py-4 text-sm font-medium text-center border border-white/20 hover:bg-white/20 transition-colors">
+                {s}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-gradient-to-r from-slate-50 to-cyan-50 border-y border-cyan-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900">
-                Consent Data Coverage
-              </h2>
-              <p className="text-slate-600 mt-3">
-                The demo includes data categories for identification, contact
-                info, health details, appointment scheduling, billing,
-                insurance, and optional communication preferences.
-              </p>
-              <ul className="mt-6 space-y-3">
-                {consentHighlights.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-3 text-sm text-slate-700"
-                  >
-                    <span className="mt-1 w-2.5 h-2.5 rounded-full bg-teal-600" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="card bg-slate-900 text-slate-100 border-slate-800">
-              <h3 className="text-xl font-semibold">What You Can Test</h3>
-              <div className="mt-4 space-y-3 text-sm text-slate-300">
-                <p>
-                  1. Capture multilingual appointment consent on a real form.
-                </p>
-                <p>
-                  2. Enforce required categories while keeping engagement
-                  optional.
-                </p>
-                <p>
-                  3. Store usage records through new dedicated consent demo
-                  APIs.
-                </p>
-                <p>4. Review submission traces from the live usage panel.</p>
-              </div>
-              <Link
-                href="/book-demo-appointment"
-                className="inline-block mt-6 bg-teal-500 hover:bg-teal-400 text-slate-900 font-semibold px-5 py-2.5 rounded-lg"
-              >
-                Open Booking Page
-              </Link>
-            </div>
+      {/* DPDP Consent Banner */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center gap-2 bg-sky-50 text-sky-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-5">
+            <Shield size={14} /> DPDP Act 2023 Compliant
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Your Data, Your Control</h2>
+          <p className="text-gray-500 mb-8 leading-relaxed max-w-2xl mx-auto">
+            MediCare Plus is committed to protecting your personal health data under the Digital Personal Data
+            Protection Act 2023. You have the right to access, correct, delete, and withdraw consent for
+            every piece of data we collect.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/consent/dashboard"
+              className="inline-flex items-center gap-2 bg-sky-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-sky-700 transition-colors"
+            >
+              <Shield size={16} /> Manage My Consents
+            </Link>
+            <Link
+              href="/privacy-policy"
+              className="inline-flex items-center gap-2 border border-sky-200 text-sky-700 px-6 py-3 rounded-xl font-semibold hover:bg-sky-50 transition-colors"
+            >
+              Privacy Policy
+            </Link>
           </div>
         </div>
       </section>
-    </>
+
+      {/* CTA */}
+      <section className="py-16 bg-gradient-to-r from-teal-600 to-sky-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready to Take Charge of Your Health?</h2>
+          <p className="text-sky-100 mb-8">Book a consultation with our specialists today.</p>
+          <Link
+            href="/appointments/book"
+            className="inline-flex items-center gap-2 bg-white text-sky-700 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-sky-50 transition-colors"
+          >
+            <Calendar size={20} /> Book an Appointment
+          </Link>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -2,52 +2,35 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IUser extends Document {
   name: string;
-  email: string;
-  password: string;
+  email?: string;
   phone?: string;
-  role?: string;
-  company?: string;
-  bio?: string;
-  consentId?: string;
-  consentUserId?: string;
-  consentRecordId?: string;
-  referenceId?: string;
-  revokeUrl?: string;
-  consentGranted: boolean;
-  consentRevoked: boolean;
-  consentErased: boolean;
-  consentAutoExpired: boolean;
-  consentExtended: boolean;
-  consentUpdated: boolean;
+  dob?: Date;
+  gender?: "male" | "female" | "other" | "prefer_not_to_say";
+  isVerified: boolean;
+  referenceId?: string; // DPDP consent manager reference
+  role: "patient" | "admin";
   createdAt: Date;
   updatedAt: Date;
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true },
-    phone: { type: String, trim: true },
-    role: { type: String, trim: true },
-    company: { type: String, trim: true },
-    bio: { type: String, trim: true },
-    consentId: { type: String, trim: true },
-    consentUserId: { type: String, trim: true },
-    consentRecordId: { type: String, trim: true },
-    referenceId: { type: String, trim: true, index: true },
-    revokeUrl: { type: String, trim: true },
-    consentGranted: { type: Boolean, default: false },
-    consentRevoked: { type: Boolean, default: false },
-    consentErased: { type: Boolean, default: false },
-    consentAutoExpired: { type: Boolean, default: false },
-    consentExtended: { type: Boolean, default: false },
-    consentUpdated: { type: Boolean, default: false },
+    name: { type: String, required: false, trim: true, default: "" },
+    email: { type: String, sparse: true, lowercase: true, trim: true },
+    phone: { type: String, sparse: true, trim: true },
+    dob: { type: Date },
+    gender: { type: String, enum: ["male", "female", "other", "prefer_not_to_say"] },
+    isVerified: { type: Boolean, default: false },
+    referenceId: { type: String },
+    role: { type: String, enum: ["patient", "admin"], default: "patient" },
   },
   { timestamps: true }
 );
 
-const User: Model<IUser> =
-  mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+UserSchema.index({ email: 1 }, { sparse: true, unique: true });
+UserSchema.index({ phone: 1 }, { sparse: true, unique: true });
+UserSchema.index({ referenceId: 1 }, { sparse: true, unique: true });
 
+const User: Model<IUser> =
+  mongoose.models.User ?? mongoose.model<IUser>("User", UserSchema);
 export default User;

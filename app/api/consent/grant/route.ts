@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { applyConsentFlag } from "@/lib/consentWebhook";
+import { z } from "zod";
+import { withAuth } from "@/lib/auth/middleware";
+import { grantConsent } from "@/lib/consent/manager";
 
-export async function POST(req: NextRequest) {
+const schema = z.object({
+  purposeId: z.string(),
+  language: z.enum(["en", "hi"]).default("en"),
+});
+
+export const POST = withAuth(async (req: NextRequest, user) => {
+  const body = await req.json().catch(() => null);
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+
   try {
-    const { referenceId } = await req.json();
-    if (!referenceId?.trim()) {
-      return NextResponse.json({ error: "referenceId is required." }, { status: 400 });
-    }
-    const found = await applyConsentFlag(referenceId.trim(), { consentGranted: true });
-    if (!found) return NextResponse.json({ error: "No record found for referenceId." }, { status: 404 });
-    return NextResponse.json({ message: "onConsentGrant applied." });
-  } catch (err) {
-    console.error("[consent/grant]", err);
-    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+    const result = await grantConsent(user.userId, parsed.data.purposeId, {
+      ipAddress: req.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: req.headers.get("user-agent") ?? undefined,
+      language: parsed.data.language,
+    });
+    return NextResponse.json(result, { status: 201 });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Failed to grant consent";
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
-}
+});
