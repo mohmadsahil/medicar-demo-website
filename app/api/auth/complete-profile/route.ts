@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
-import { verifyAccessToken, signAccessToken, issueRefreshToken } from "@/lib/auth/jwt";
+import {
+  verifyAccessToken,
+  signAccessToken,
+  issueRefreshToken,
+} from "@/lib/auth/jwt";
 import { grantConsent } from "@/lib/consent/manager";
 import { sendWelcomeEmail } from "@/lib/email";
 
@@ -10,7 +14,9 @@ const schema = z.object({
   name: z.string().min(2).max(100),
   dob: z.string().optional(),
   gender: z.enum(["male", "female", "other", "prefer_not_to_say"]).optional(),
-  consentedPurposes: z.array(z.string()).min(1, "At least one consent required"),
+  consentedPurposes: z
+    .array(z.string())
+    .min(1, "At least one consent required"),
   language: z.enum(["en", "hi"]).default("en"),
 });
 
@@ -30,16 +36,21 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   await connectDB();
   const { name, dob, gender, consentedPurposes, language } = parsed.data;
 
   const existingUser = await User.findById(payload.userId);
-  if (!existingUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  if (!existingUser)
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  const referenceId = existingUser.referenceId || existingUser.email || existingUser.phone;
+  const referenceId =
+    existingUser.referenceId || existingUser.email || existingUser.phone;
 
   const user = await User.findByIdAndUpdate(
     payload.userId,
@@ -50,8 +61,12 @@ export async function POST(req: NextRequest) {
       isVerified: true,
       ...(referenceId && !existingUser.referenceId ? { referenceId } : {}),
     },
-    { new: true }
+    { new: true },
   );
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
 
   const ip = req.headers.get("x-forwarded-for") ?? undefined;
   const ua = req.headers.get("user-agent") ?? undefined;
@@ -59,11 +74,15 @@ export async function POST(req: NextRequest) {
 
   for (const purposeId of consentedPurposes) {
     try {
-      const { consentReceiptId } = await grantConsent(user._id.toString(), purposeId, {
-        ipAddress: ip,
-        userAgent: ua,
-        language,
-      });
+      const { consentReceiptId } = await grantConsent(
+        user._id.toString(),
+        purposeId,
+        {
+          ipAddress: ip,
+          userAgent: ua,
+          language,
+        },
+      );
       consentReceipts.push(consentReceiptId);
     } catch (e) {
       console.error(`Consent grant failed for ${purposeId}:`, e);
@@ -87,7 +106,13 @@ export async function POST(req: NextRequest) {
   const refreshToken = await issueRefreshToken(user._id.toString());
 
   const res = NextResponse.json({
-    user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role },
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+    },
     accessToken,
     consentReceipts,
   });
