@@ -23,10 +23,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
   }
 
-  const result = await requestOtp(identifier, identifierType);
-  if (!result.success) {
-    return NextResponse.json({ error: result.message }, { status: 429 });
+  try {
+    const result = await requestOtp(identifier, identifierType);
+    if (!result.success) {
+      return NextResponse.json({ error: result.message }, { status: 429 });
+    }
+    return NextResponse.json({ message: result.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  return NextResponse.json({ message: result.message });
 }

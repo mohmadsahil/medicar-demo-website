@@ -3,7 +3,9 @@
     "allow": [
       "PowerShell(npm *)",
       "PowerShell(New-Item *)",
-      "PowerShell(Set-Content *)"
+      "PowerShell(Set-Content *)",
+      "PowerShell(Test-NetConnection *)",
+      "Bash(curl *)"
     ]
   }
 }
