@@ -35,7 +35,7 @@ export default function RootLayout({
       <head>
         <script
           src="http://localhost:4173/anumati-blocker.js"
-          data-application-id="APP_medicare-plus-website-portal_1781077582794"
+          data-site-key="APP_medicare-plus-website-portal_1781077582794"
         ></script>
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-gray-50 text-gray-900">
