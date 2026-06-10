@@ -43,7 +43,7 @@ export default function Header() {
       {/* Top bar */}
       <div className="bg-sky-700 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <span>🏥 MediCare Plus Hospital — 24/7 Emergency: <strong>1800-MED-PLUS</strong></span>
+          <span>🏥 MediCare Plus Hospital — 24/7 Emergency: <strong>1800-MED-PLUS-V1</strong></span>
           <span className="hidden sm:flex items-center gap-4">
             <span><Phone size={11} className="inline mr-1" />+91-22-4567-8900</span>
             <Link href="/grievance" className="hover:text-sky-200">Grievance Portal</Link>

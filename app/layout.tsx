@@ -33,20 +33,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
-        {/* <script
-          src="https://uat-consentadmin.digitalanumati.com/anumati-blocker.js"
-          data-application-id="APP_core-hrms-portal_1781073259112"
-        ></script> */}
         <script
           src="http://localhost:4173/anumati-blocker.js"
           data-application-id="APP_core-hrms-portal_1781073259112"
         ></script>
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-gray-50 text-gray-900">
-        <script
-          src="http://localhost:4173/anumati-dpdp-consent-v1.js"
-          // data-application-id="38eca615-3c07-42fb-95af-25a93636f444"
-        ></script>
+        <script src="http://localhost:4173/anumati-dpdp-consent-v1.js"></script>
         <AuthProvider>
           <ConsentProvider>
             <Header />

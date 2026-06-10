@@ -46,7 +46,7 @@ export default function HomePage() {
                 href="/appointments/book"
                 className="inline-flex items-center justify-center gap-2 bg-white text-sky-700 px-8 py-3.5 rounded-xl font-bold text-base shadow-lg hover:bg-sky-50 transition-colors"
               >
-                <Calendar size={18} /> Book Appointment
+                <Calendar size={18} /> Book Appointment Here
               </Link>
               <Link
                 href="/doctors"
