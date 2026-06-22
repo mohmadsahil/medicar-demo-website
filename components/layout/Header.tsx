@@ -21,7 +21,7 @@ const NAV_LINKS = [
     ],
   },
   { label: "Doctors", href: "/doctors" },
-  { label: "Services", href: "/services" },
+  { label: "Consents", href: "/consents" },
   { label: "Health Packages", href: "/health-packages" },
   { label: "Contact", href: "/contact" },
 ];

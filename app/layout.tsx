@@ -34,6 +34,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
         <script
+          // src="http://localhost:4173/anumati-blocker.js"
           src="http://localhost:4173/anumati-blocker.js"
              data-site-key="APP_httpsmedicare-demo-websitenetlifyapp_1781159410502"
         ></script>

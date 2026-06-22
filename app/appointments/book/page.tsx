@@ -12,13 +12,73 @@ interface Doctor {
   department: { name: string };
 }
 
+const STATIC_DOCTORS: Doctor[] = [
+  {
+    _id: "1",
+    name: "Aarav Sharma",
+    slug: "aarav-sharma",
+    specialization: "Cardiologist",
+    department: { name: "Cardiology" },
+  },
+  {
+    _id: "2",
+    name: "Priya Patel",
+    slug: "priya-patel",
+    specialization: "Dermatologist",
+    department: { name: "Dermatology" },
+  },
+  {
+    _id: "3",
+    name: "Rohan Mehta",
+    slug: "rohan-mehta",
+    specialization: "Neurologist",
+    department: { name: "Neurology" },
+  },
+  {
+    _id: "4",
+    name: "Ananya Iyer",
+    slug: "ananya-iyer",
+    specialization: "Pediatrician",
+    department: { name: "Pediatrics" },
+  },
+  {
+    _id: "5",
+    name: "Vikram Singh",
+    slug: "vikram-singh",
+    specialization: "Orthopedic Surgeon",
+    department: { name: "Orthopedics" },
+  },
+  {
+    _id: "6",
+    name: "Neha Kapoor",
+    slug: "neha-kapoor",
+    specialization: "General Physician",
+    department: { name: "General Medicine" },
+  },
+];
+
+const STATIC_SLOTS = [
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+];
+
 function BookAppointmentContent() {
-  const { user, accessToken, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedDoctor = searchParams.get("doctor");
 
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [doctors] = useState<Doctor[]>(STATIC_DOCTORS);
   const [form, setForm] = useState({
     doctorSlug: preselectedDoctor ?? "",
     date: "",
@@ -34,11 +94,7 @@ function BookAppointmentContent() {
     if (authLoading) return;
     if (!user) {
       router.replace(`/auth/login?redirect=/appointments/book`);
-      return;
     }
-    fetch("/api/doctors")
-      .then((r) => r.json())
-      .then((d) => setDoctors(d.doctors ?? []));
   }, [authLoading, user, router]);
 
   useEffect(() => {
@@ -46,9 +102,7 @@ function BookAppointmentContent() {
       setSlots([]);
       return;
     }
-    fetch(`/api/slots?doctorId=${form.doctorSlug}&date=${form.date}`)
-      .then((r) => r.json())
-      .then((d) => setSlots(d.slots ?? []));
+    setSlots(STATIC_SLOTS);
   }, [form.doctorSlug, form.date]);
 
   const submit = async (e: React.FormEvent) => {
@@ -59,28 +113,9 @@ function BookAppointmentContent() {
     }
     setBookingLoading(true);
     setError("");
-    try {
-      const dateTime = new Date(`${form.date}T${form.time}:00`).toISOString();
-      const res = await fetch("/api/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          doctorSlug: form.doctorSlug,
-          dateTime,
-          reason: form.reason,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Booking failed");
-      setSuccess(true);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Something went wrong");
-    } finally {
-      setBookingLoading(false);
-    }
+    await new Promise((r) => setTimeout(r, 600));
+    setBookingLoading(false);
+    setSuccess(true);
   };
 
   if (authLoading) {
