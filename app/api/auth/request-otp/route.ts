@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: result.message });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const isDbError = message.includes("ECONNREFUSED") || message.includes("querySrv") || message.includes("MONGODB_URI");
+    return NextResponse.json(
+      { error: isDbError ? "Database unavailable. Please try again later." : message },
+      { status: isDbError ? 503 : 500 }
+    );
   }
 }

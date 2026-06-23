@@ -5,7 +5,17 @@
       "PowerShell(New-Item *)",
       "PowerShell(Set-Content *)",
       "PowerShell(Test-NetConnection *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(nslookup _mongodb._tcp.clustermedireach.xt7o7.mongodb.net)",
+      "PowerShell(Resolve-DnsName *)",
+      "Bash(node -e ' *)",
+      "WebFetch(domain:demo-web.digitalanumati.com)",
+      "Bash(xargs grep -l \"4173\\\\|anumati-dpdp-consent\")",
+      "Bash(xargs grep -l \"transactionId\\\\|transaction_id\")",
+      "Bash(xargs grep -l \"transactionId\")",
+      "Bash(npm run *)",
+      "Bash(npx vite *)",
+      "Bash(xargs grep -l \"dialog.*bar\\\\|bar.*dialog\\\\|bannerLayout\")"
     ]
   }
 }

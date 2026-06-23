@@ -34,12 +34,12 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
         <script
-          src="https://uat-consentadmin.digitalanumati.com/anumati-blocker.js"
+          src="http://localhost:4173/anumati-blocker.js"
           data-site-key="APP_medicare_1781873589878"
         ></script>
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-gray-50 text-gray-900">
-        <script src="https://uat-consentadmin.digitalanumati.com/anumati-dpdp-consent-v1.js"></script>
+        <script src="http://localhost:4173/anumati-dpdp-consent-v1.js"></script>
         <AuthProvider>
           <ConsentProvider>
             <Header />

@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setAccessToken(null);
         localStorage.removeItem("da_reference_id");
+        localStorage.removeItem("da_reference_name");
       }
     } catch {
       setUser(null);
@@ -84,6 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setAccessToken(null);
     localStorage.removeItem("da_reference_id");
+    localStorage.removeItem("da_reference_name");
+    localStorage.removeItem("da_transaction_id");
   };
 
   return (
