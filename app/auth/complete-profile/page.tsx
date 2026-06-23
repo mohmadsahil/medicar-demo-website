@@ -13,7 +13,7 @@ function getConsentTransactionId(): string | null {
     (w["daTransactionId"] as string) ||
     ((w["Anumati"] as Record<string, unknown>)?.["transactionId"] as string) ||
     (w["_da_transaction_id"] as string) ||
-    localStorage.getItem("da_transaction_id") ||
+    sessionStorage.getItem("da_transaction_id") ||
     null
   );
 }
@@ -91,6 +91,8 @@ function CompleteProfileContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to complete profile");
+      try { sessionStorage.removeItem("da_transaction_id"); } catch {}
+      try { delete (window as any).daTransactionId; } catch {}
       login(data.accessToken, data.user);
       router.push("/portal");
     } catch (e: unknown) {

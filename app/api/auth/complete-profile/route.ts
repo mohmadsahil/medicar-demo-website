@@ -165,7 +165,7 @@ export async function POST(req: NextRequest) {
   const refreshToken = await issueRefreshToken(user._id.toString());
 
   const res = NextResponse.json({
-    user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role },
+    user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role, referenceId: user.referenceId ?? null },
     accessToken,
     consentReceipts,
     referenceId,

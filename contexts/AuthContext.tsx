@@ -14,6 +14,7 @@ interface User {
   email?: string;
   phone?: string;
   role: string;
+  referenceId?: string | null;
 }
 
 interface AuthContextValue {
@@ -86,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null);
     localStorage.removeItem("da_reference_id");
     localStorage.removeItem("da_reference_name");
-    localStorage.removeItem("da_transaction_id");
+    try { sessionStorage.removeItem("da_transaction_id"); } catch {}
   };
 
   return (
