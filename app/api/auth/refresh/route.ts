@@ -31,7 +31,19 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.json({
     accessToken,
-    user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role, referenceId: user.referenceId ?? null },
+    user: {
+      id:          user._id,
+      name:        user.name,
+      email:       user.email       ?? null,
+      phone:       user.phone       ?? null,
+      dob:         user.dob         ?? null,
+      gender:      user.gender      ?? null,
+      isVerified:  user.isVerified,
+      referenceId: user.referenceId?.startsWith("DA-REF-") ? user.referenceId : null,
+      role:        user.role,
+      createdAt:   user.createdAt,
+      updatedAt:   user.updatedAt,
+    },
   });
 
   res.cookies.set("refresh_token", newRefresh, {

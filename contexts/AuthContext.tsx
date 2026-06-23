@@ -11,10 +11,15 @@ import {
 interface User {
   id: string;
   name: string;
-  email?: string;
-  phone?: string;
-  role: string;
+  email?: string | null;
+  phone?: string | null;
+  dob?: string | null;
+  gender?: string | null;
+  isVerified?: boolean;
   referenceId?: string | null;
+  role: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface AuthContextValue {
