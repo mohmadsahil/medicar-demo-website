@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Calendar, Clock, User, CheckCircle, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,8 @@ function BookAppointmentContent() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const daReferenceIdRef = useRef("");
+  const daTxnIdRef = useRef("");
 
   useEffect(() => {
     if (authLoading) return;
@@ -51,6 +53,36 @@ function BookAppointmentContent() {
       .then((d) => setSlots(d.slots ?? []));
   }, [form.doctorSlug, form.date]);
 
+  useEffect(() => {
+    const handleConsentCaptured = async (e: Event) => {
+      const { transactionId, referenceId } = (e as CustomEvent).detail ?? {};
+      if (!transactionId || !referenceId) return;
+
+      console.log("[DA] Consent captured:", { transactionId, referenceId });
+      daReferenceIdRef.current = referenceId;
+      daTxnIdRef.current = transactionId;
+
+      try {
+        const res = await fetch("/api/consent/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transactionId, referenceId }),
+        });
+        const result = await res.json();
+        if (result.valid) {
+          console.log("[DA] Consent verified — purposes:", result.purposes);
+        } else {
+          console.warn("[DA] Consent invalid:", result.reason);
+        }
+      } catch (err) {
+        console.error("[DA] Verify failed:", err);
+      }
+    };
+
+    window.addEventListener("da:consent:captured", handleConsentCaptured);
+    return () => window.removeEventListener("da:consent:captured", handleConsentCaptured);
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.doctorSlug || !form.date || !form.time || !form.reason) {
@@ -71,6 +103,7 @@ function BookAppointmentContent() {
           doctorSlug: form.doctorSlug,
           dateTime,
           reason: form.reason,
+          ...(daReferenceIdRef.current ? { consentReceiptId: daReferenceIdRef.current } : {}),
         }),
       });
       const data = await res.json();

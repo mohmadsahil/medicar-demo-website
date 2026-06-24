@@ -1,24 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { withAuth } from "@/lib/auth/middleware";
-import { withdrawConsent } from "@/lib/consent/manager";
 
-const schema = z.object({ purposeId: z.string() });
-
-// Section 6(4) – Withdrawal must be as easy as giving consent
-export const POST = withAuth(async (req: NextRequest, user) => {
-  const body = await req.json().catch(() => null);
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-
+export async function POST(req: NextRequest) {
   try {
-    const result = await withdrawConsent(user.userId, parsed.data.purposeId, {
-      ipAddress: req.headers.get("x-forwarded-for") ?? undefined,
-      userAgent: req.headers.get("user-agent") ?? undefined,
+    const { referenceId, purposeIds, reason } = await req.json();
+
+    if (!referenceId) {
+      return NextResponse.json({ success: false, error: "referenceId is required" }, { status: 400 });
+    }
+
+    const baseUrl = process.env.DA_BASE_URL ?? process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
+    const secretKey = process.env.DA_SECRET_KEY ?? process.env.DIGITAL_ANUMATI_API_KEY ?? "";
+
+    const response = await fetch(`${baseUrl}/api/public/consents/action`, {
+      method: "POST",
+      headers: {
+        "x-secret-key": secretKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        referenceId,
+        action: "withdrawn",
+        purposeIds: purposeIds ?? [],
+        reason: reason ?? "user_requested",
+      }),
     });
-    return NextResponse.json(result);
-  } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : "Failed to withdraw consent";
-    return NextResponse.json({ error: msg }, { status: 400 });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { success: false, error: (result as { message?: string }).message ?? "Failed to withdraw" },
+        { status: response.status }
+      );
+    }
+
+    const data = (result as { data?: Record<string, unknown> }).data ?? {};
+    return NextResponse.json({
+      success: true,
+      message: "Your consent has been withdrawn successfully.",
+      data: {
+        transactionId: data.transactionId,
+        referenceId: data.referenceId,
+        action: "withdrawn",
+        affectedPurposes: data.affectedPurposes,
+        performedAt: data.performedAt,
+        webhookFired: data.webhookFired,
+        dispatchId: data.dispatchId,
+      },
+    });
+  } catch (error) {
+    console.error("[DA] Withdraw error:", error);
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
-});
+}

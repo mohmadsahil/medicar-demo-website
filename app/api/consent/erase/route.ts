@@ -2,14 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { referenceId, purposeIds, reason } = await req.json();
+    const { referenceId, reason } = await req.json();
 
     if (!referenceId) {
       return NextResponse.json({ success: false, error: "referenceId is required" }, { status: 400 });
-    }
-
-    if (!purposeIds || purposeIds.length === 0) {
-      return NextResponse.json({ success: false, error: "purposeIds required for grant" }, { status: 400 });
     }
 
     const baseUrl = process.env.DA_BASE_URL ?? process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
@@ -23,9 +19,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         referenceId,
-        action: "granted",
-        purposeIds,
-        reason: reason ?? "user_re_consented",
+        action: "erased",
+        reason: reason ?? "user_requested",
       }),
     });
 
@@ -33,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: (result as { message?: string }).message ?? "Failed to grant" },
+        { success: false, error: (result as { message?: string }).message ?? "Failed to erase" },
         { status: response.status }
       );
     }
@@ -41,18 +36,19 @@ export async function POST(req: NextRequest) {
     const data = (result as { data?: Record<string, unknown> }).data ?? {};
     return NextResponse.json({
       success: true,
-      message: "Consent granted successfully.",
+      message: "Your data has been erased successfully.",
       data: {
         transactionId: data.transactionId,
         referenceId: data.referenceId,
-        action: "granted",
+        action: "erased",
         affectedPurposes: data.affectedPurposes,
         performedAt: data.performedAt,
         webhookFired: data.webhookFired,
+        dispatchId: data.dispatchId,
       },
     });
   } catch (error) {
-    console.error("[DA] Grant error:", error);
+    console.error("[DA] Erase error:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

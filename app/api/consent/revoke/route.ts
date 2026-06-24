@@ -8,10 +8,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "referenceId is required" }, { status: 400 });
     }
 
-    if (!purposeIds || purposeIds.length === 0) {
-      return NextResponse.json({ success: false, error: "purposeIds required for grant" }, { status: 400 });
-    }
-
     const baseUrl = process.env.DA_BASE_URL ?? process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
     const secretKey = process.env.DA_SECRET_KEY ?? process.env.DIGITAL_ANUMATI_API_KEY ?? "";
 
@@ -23,9 +19,9 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         referenceId,
-        action: "granted",
-        purposeIds,
-        reason: reason ?? "user_re_consented",
+        action: "revoked",
+        purposeIds: purposeIds ?? [],
+        reason: reason ?? "user_requested",
       }),
     });
 
@@ -33,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: (result as { message?: string }).message ?? "Failed to grant" },
+        { success: false, error: (result as { message?: string }).message ?? "Failed to revoke" },
         { status: response.status }
       );
     }
@@ -41,18 +37,18 @@ export async function POST(req: NextRequest) {
     const data = (result as { data?: Record<string, unknown> }).data ?? {};
     return NextResponse.json({
       success: true,
-      message: "Consent granted successfully.",
+      message: "Consent revoked successfully.",
       data: {
         transactionId: data.transactionId,
         referenceId: data.referenceId,
-        action: "granted",
+        action: "revoked",
         affectedPurposes: data.affectedPurposes,
         performedAt: data.performedAt,
         webhookFired: data.webhookFired,
       },
     });
   } catch (error) {
-    console.error("[DA] Grant error:", error);
+    console.error("[DA] Revoke error:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
