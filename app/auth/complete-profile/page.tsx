@@ -165,16 +165,13 @@ function CompleteProfileContent() {
 
           {error && <div className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</div>}
 
-          {/* suppressHydrationWarning: DA consent widget injects a label wrapper on the client */}
-          <div suppressHydrationWarning>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
-            >
-              {loading ? "Creating account..." : "Create Account & Continue"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
+          >
+            {loading ? "Creating account..." : "Create Account & Continue"}
+          </button>
         </form>
       </div>
     </div>
@@ -182,8 +179,22 @@ function CompleteProfileContent() {
 }
 
 export default function CompleteProfilePage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Render placeholder on server / first paint so React has nothing to reconcile.
+  // DA consent widget mutates the submit button on the client (adds data-da-consent-gate label),
+  // causing hydration mismatch. Client-only mount avoids the diff entirely.
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-400">
+        Loading…
+      </div>
+    );
+  }
+
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>}>
       <CompleteProfileContent />
     </Suspense>
   );
