@@ -1,39 +1,12 @@
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-function verifySignature(rawBody: Buffer, signature: string, secret: string): boolean {
-  if (!signature || !secret) return false;
-  const expected = "sha256=" + crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
-  try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
-  } catch {
-    return false;
-  }
-}
-
 export async function POST(req: NextRequest) {
-  const rawBytes = await req.arrayBuffer();
-  const rawBody = Buffer.from(rawBytes);
+  const event = await req.json().catch(() => null);
+  if (!event) return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
 
-  const signature = req.headers.get("x-da-signature") ?? "";
-  const secret = process.env.DA_WEBHOOK_SECRET ?? "";
-
-  if (!verifySignature(rawBody, signature, secret)) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  }
-
-  let event: Record<string, unknown>;
-  try {
-    event = JSON.parse(rawBody.toString("utf8"));
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  // Respond immediately — DPDP Act SLA requires processing within 1h/24h,
-  // not response time. Heavy work happens after 200 is sent.
-  const response = NextResponse.json({ received: true });
+  console.log("[DA webhook]", event.event, event.referenceId);
   processEvent(event).catch((e) => console.error("[DA webhook] processEvent failed:", e));
-  return response;
+  return NextResponse.json({ received: true });
 }
 
 async function processEvent(event: Record<string, unknown>) {
