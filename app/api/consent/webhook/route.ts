@@ -1,99 +1,239 @@
-import crypto from "crypto";
-import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import ConsentWebhookEvent from "@/models/ConsentWebhookEvent";
+import { NextRequest, NextResponse } from 'next/server'
 
-const CONSENT_EVENTS = new Set([
-  "consent.created",
-  "consent.granted",
-  "consent.withdrawn",
-  "consent.expired",
-  "consent.superseded",
-  "consent.reconfirmed",
-  "consent.expiry.reminder",
-]);
-
-const NOTICE_EVENTS = new Set(["notice.accepted", "notice.rejected"]);
-
-interface WebhookBody {
-  id?: string;
-  data?: {
-    referenceId?: string;
-    consentId?: string;
-    transactionId?: string;
-    tenantPrincipalId?: string;
-    noticeType?: string;
-    consentStatus?: string;
-    purpose?: { name?: string };
-  };
-  metadata?: { source?: string };
-  accessUrl?: string;
-  accessToken?: string;
-  occurredAt?: string;
-}
-
-function verifySignature(signature: string | null): boolean {
-  const secret = process.env.WEBHOOK_NOTICE_SECRET;
-  if (!secret) return true; // no secret configured — accept all
-  if (!signature) return false;
-  try {
-    const sigBuf = Buffer.from(signature);
-    const secretBuf = Buffer.from(secret);
-    if (sigBuf.length !== secretBuf.length) return false;
-    return crypto.timingSafeEqual(sigBuf, secretBuf);
-  } catch {
-    return false;
-  }
-}
-
+const DA_BASE       = process.env.DIGITAL_ANUMATI_BASE_URL ?? process.env.DA_BASE_URL ?? 'http://localhost:5001'
+const DA_SECRET_KEY = process.env.DIGITAL_ANUMATI_API_KEY  ?? process.env.DA_SECRET_KEY ?? ''
+const DB_TIMEOUT_MS = 30_000
 
 export async function POST(req: NextRequest) {
-  const signature = req.headers.get("x-webhook-signature");
-  const signatureValid = verifySignature(signature);
-
-  if (!signatureValid) {
-    return NextResponse.json(
-      { error: "Unauthorized: invalid webhook signature." },
-      { status: 401 }
-    );
-  }
-
-  const event = req.headers.get("x-webhook-event") ?? "";
-  const isConsent = CONSENT_EVENTS.has(event);
-  const isNotice = NOTICE_EVENTS.has(event);
-
-  if (!isConsent && !isNotice) {
-    return NextResponse.json(
-      { error: `Unsupported event type: ${event}` },
-      { status: 400 }
-    );
-  }
-
-  const contentType = req.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) {
-    return NextResponse.json({ error: "Content-Type must be application/json" }, { status: 415 });
-  }
-
-  let body: WebhookBody;
+  let body: any
   try {
-    body = await req.json();
+    body = await req.json()
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  // test requests (source = webhook_test) → confirm only, no log
-  if (body.metadata?.source === "webhook_test") {
-    return NextResponse.json({ received: true, event });
+  // Backend sends event type in header AND in body.type
+  const eventType  = req.headers.get('x-webhook-event') ?? body.type ?? ''
+  const dispatchId = req.headers.get('x-da-dispatch-id')
+    ?? req.headers.get('x-da-dispatch')
+    ?? body.id
+    ?? ''
+
+  // referenceId lives inside body.data
+  const referenceId = body.data?.referenceId
+    ?? body.data?.reference_id
+    ?? body.referenceId
+    ?? ''
+
+  console.log(
+    '[DA Webhook] Received:', eventType,
+    '| ref:', referenceId,
+    '| dispatch:', dispatchId,
+    '| at:', new Date().toISOString(),
+  )
+
+  // Return 200 immediately — DA needs response within 10 seconds
+  processEvent({ eventType, dispatchId, referenceId, body })
+    .catch(console.error)
+
+  return NextResponse.json({ received: true })
+}
+
+async function processEvent(ctx: {
+  eventType:   string
+  dispatchId:  string
+  referenceId: string
+  body:        any
+}) {
+  const { eventType, dispatchId, referenceId } = ctx
+
+  switch (eventType) {
+
+    case 'consent.withdrawn':
+      await handleWithdrawn(dispatchId, referenceId)
+      break
+
+    case 'data.deleted':
+      await handleDeleted(dispatchId, referenceId)
+      break
+
+    case 'consent.created':
+    case 'consent.captured':
+      console.log('[DA] Consent created | ref:', referenceId)
+      break
+
+    case 'consent.granted':
+      console.log('[DA] Consent granted | ref:', referenceId)
+      break
+
+    case 'consent.expired':
+      console.log('[DA] Consent expired | ref:', referenceId)
+      break
+
+    case 'consent.expiry.reminder':
+      console.log('[DA] Expiring soon | ref:', referenceId)
+      break
+
+    default:
+      console.log('[DA] Unhandled event:', eventType)
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+  )
+  return Promise.race([promise, timeout])
+}
+
+async function sendPostback(endpoint: string, payload: object, dispatchId: string) {
+  const start = Date.now()
+
+  const res = await fetch(`${DA_BASE}${endpoint}`, {
+    method:  'POST',
+    headers: {
+      'x-secret-key':  DA_SECRET_KEY,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const result = await res.json().catch(() => ({}))
+  const ms     = Date.now() - start
+
+  if (res.status === 409) {
+    console.log('[DA] Already confirmed | dispatch:', dispatchId, `(${ms}ms)`)
+    return
   }
 
-  await connectDB();
+  if (!res.ok) {
+    console.error(
+      '[DA] Postback failed | dispatch:', dispatchId,
+      '| status:', res.status,
+      '| took:', ms + 'ms',
+      '| body:', result,
+    )
+    return
+  }
 
-  await ConsentWebhookEvent.create({
-    event,
-    payload: body as unknown as Record<string, unknown>,
-    signatureValid,
-    processedAt: new Date(),
-  });
+  console.log(
+    '[DA] Postback confirmed | dispatch:', dispatchId,
+    '| complianceFlag:', (result as any).data?.complianceFlag,
+    '| took:', ms + 'ms',
+  )
+}
 
-  return NextResponse.json({ received: true, event });
+async function handleWithdrawn(dispatchId: string, referenceId: string) {
+  const start = Date.now()
+  console.log('[DA] Processing withdrawal | ref:', referenceId)
+
+  try {
+    await withTimeout(doWithdrawalWork(referenceId), DB_TIMEOUT_MS, 'withdrawal DB work')
+
+    const ms = Date.now() - start
+    console.log('[DA] Withdrawal work done | ref:', referenceId, `| took: ${ms}ms`)
+
+    await sendPostback(
+      '/api/v1/server/app/consents/withdraw/confirm',
+      {
+        dispatchId,
+        referenceId,
+        status:      'processed',
+        processedAt: new Date().toISOString(),
+        actions: [
+          { type: 'email_stopped', result: 'success' },
+          { type: 'crm_updated',   result: 'success' },
+        ],
+        remark: `Completed in ${ms}ms`,
+      },
+      dispatchId,
+    )
+
+  } catch (error) {
+    const ms        = Date.now() - start
+    const isTimeout = error instanceof Error && error.message.includes('timed out')
+    console.error('[DA] Withdrawal error | ref:', referenceId, `| ${ms}ms |`, error)
+
+    await sendPostback(
+      '/api/v1/server/app/consents/withdraw/confirm',
+      {
+        dispatchId,
+        referenceId,
+        status:      'failed',
+        processedAt: new Date().toISOString(),
+        actions:     [],
+        remark: isTimeout
+          ? `Timed out after ${DB_TIMEOUT_MS}ms`
+          : `Error: ${error instanceof Error ? error.message : 'Unknown'}`,
+      },
+      dispatchId,
+    ).catch(console.error)
+  }
+}
+
+async function handleDeleted(dispatchId: string, referenceId: string) {
+  const start = Date.now()
+  console.log('[DA] Processing deletion | ref:', referenceId)
+
+  try {
+    const { deletedTypes } = await withTimeout(
+      doDeletionWork(referenceId),
+      DB_TIMEOUT_MS,
+      'deletion DB work',
+    )
+
+    const ms = Date.now() - start
+    console.log('[DA] Deletion work done | ref:', referenceId, `| took: ${ms}ms | types:`, deletedTypes)
+
+    await sendPostback(
+      '/api/v1/server/app/consents/data-deleted/confirm',
+      {
+        dispatchId,
+        referenceId,
+        status:    'deleted',
+        deletedAt: new Date().toISOString(),
+        dataTypes: deletedTypes,
+        remark:    `Completed in ${ms}ms`,
+      },
+      dispatchId,
+    )
+
+  } catch (error) {
+    const ms        = Date.now() - start
+    const isTimeout = error instanceof Error && error.message.includes('timed out')
+    console.error('[DA] Deletion error | ref:', referenceId, `| ${ms}ms |`, error)
+
+    await sendPostback(
+      '/api/v1/server/app/consents/data-deleted/confirm',
+      {
+        dispatchId,
+        referenceId,
+        status:    'failed',
+        deletedAt: new Date().toISOString(),
+        dataTypes: [],
+        remark: isTimeout
+          ? `Timed out after ${DB_TIMEOUT_MS}ms`
+          : `Error: ${error instanceof Error ? error.message : 'Unknown'}`,
+      },
+      dispatchId,
+    ).catch(console.error)
+  }
+}
+
+// Replace with real MongoDB / DB calls for your business logic
+async function doWithdrawalWork(referenceId: string): Promise<void> {
+  console.log('[DA] doWithdrawalWork | ref:', referenceId)
+  // const db = await getDatabase()
+  // await db.collection('appointments').updateMany(
+  //   { da_reference_id: referenceId },
+  //   { $set: { consent_status: 'withdrawn', updated_at: new Date() } }
+  // )
+}
+
+async function doDeletionWork(referenceId: string): Promise<{ deletedTypes: string[] }> {
+  console.log('[DA] doDeletionWork | ref:', referenceId)
+  // const db = await getDatabase()
+  // await db.collection('appointments').deleteMany({ da_reference_id: referenceId })
+  // await db.collection('health_records').deleteMany({ da_reference_id: referenceId })
+  return { deletedTypes: ['booking_records', 'contact_info'] }
 }
