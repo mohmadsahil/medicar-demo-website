@@ -4,7 +4,8 @@ const PROTECTED_PATHS = [
   "/appointments/book",
   "/portal",
   "/consent",
-  "/admin",
+  "/admin/consent-analytics",
+  "/admin/webhook-events",
 ];
 
 export async function proxy(req: NextRequest) {
@@ -28,6 +29,7 @@ export const config = {
     "/appointments/book",
     "/portal/:path*",
     "/consent/:path*",
-    "/admin/:path*",
+    "/admin/consent-analytics/:path*",
+    "/admin/webhook-events/:path*",
   ],
 };

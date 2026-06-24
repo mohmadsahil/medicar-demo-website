@@ -1,10 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
 import ConsentWebhookEvent from "@/models/ConsentWebhookEvent";
-import { sendConsentEventEmail, sendNoticeEventEmail } from "@/lib/email";
-import type { ConsentEventPayload, NoticeEventPayload } from "@/lib/email/types";
 
 const CONSENT_EVENTS = new Set([
   "consent.created",
@@ -29,6 +26,7 @@ interface WebhookBody {
     consentStatus?: string;
     purpose?: { name?: string };
   };
+  metadata?: { source?: string };
   accessUrl?: string;
   accessToken?: string;
   occurredAt?: string;
@@ -36,7 +34,8 @@ interface WebhookBody {
 
 function verifySignature(signature: string | null): boolean {
   const secret = process.env.WEBHOOK_NOTICE_SECRET;
-  if (!signature || !secret) return false;
+  if (!secret) return true; // no secret configured — accept all
+  if (!signature) return false;
   try {
     const sigBuf = Buffer.from(signature);
     const secretBuf = Buffer.from(secret);
@@ -47,22 +46,6 @@ function verifySignature(signature: string | null): boolean {
   }
 }
 
-async function resolveRecipient(
-  referenceId?: string
-): Promise<{ name: string; email: string } | null> {
-  if (referenceId) {
-    // referenceId is the user's email address in the consent manager
-    const user = await User.findOne({
-      $or: [{ email: referenceId }, { referenceId }],
-    });
-    if (user?.email) return { name: user.name || "Patient", email: user.email };
-    // If no user found but referenceId looks like an email, use it directly
-    if (referenceId.includes("@")) return { name: "Patient", email: referenceId };
-  }
-  const adminEmail = process.env.ADMIN_EMAIL;
-  if (adminEmail) return { name: "Admin", email: adminEmail };
-  return null;
-}
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("x-webhook-signature");
@@ -98,73 +81,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Validate required fields per event type
-  if (isConsent && !body.data?.consentId) {
-    return NextResponse.json({ error: "Missing data.consentId for consent event" }, { status: 400 });
-  }
-  if (isNotice && (!body.data?.transactionId || !body.data?.tenantPrincipalId || !body.accessUrl || !body.accessToken)) {
-    return NextResponse.json({ error: "Missing required fields for notice event" }, { status: 400 });
+  // test requests (source = webhook_test) → confirm only, no log
+  if (body.metadata?.source === "webhook_test") {
+    return NextResponse.json({ received: true, event });
   }
 
   await connectDB();
 
-  const processedAt = new Date();
-  let emailSent = false;
-  let errorMessage: string | undefined;
-  let recipientEmail: string | undefined;
-
-  try {
-    const recipient = await resolveRecipient(body.data?.referenceId);
-
-    if (recipient) {
-      recipientEmail = recipient.email;
-
-      if (isConsent) {
-        const payload: ConsentEventPayload = {
-          event: event as ConsentEventPayload["event"],
-          consentId: body.data!.consentId!,
-          recordId: body.id ?? "",
-          occurredAt: body.occurredAt ?? new Date().toISOString(),
-          purposeName: body.data?.purpose?.name,
-          accessUrl: body.accessUrl,
-        };
-        await sendConsentEventEmail(recipient, payload);
-      } else {
-        const payload: NoticeEventPayload = {
-          event: event as NoticeEventPayload["event"],
-          recordId: body.id ?? "",
-          transactionId: body.data!.transactionId!,
-          occurredAt: body.occurredAt ?? new Date().toISOString(),
-          tenantPrincipalId: body.data!.tenantPrincipalId!,
-          accessUrl: body.accessUrl!,
-          accessToken: body.accessToken!,
-        };
-        await sendNoticeEventEmail(recipient, payload);
-      }
-      emailSent = true;
-    } else {
-      errorMessage = "No recipient resolved (no matching user and ADMIN_EMAIL not set)";
-      console.error(`[WEBHOOK] ${errorMessage} for event ${event}`);
-    }
-  } catch (err: unknown) {
-    errorMessage = err instanceof Error ? err.message : String(err);
-    console.error(`[WEBHOOK] Email dispatch failed for ${event}: ${errorMessage}`);
-  }
-
-  // Audit every received webhook — Section 8(6) DPDP Act accountability
   await ConsentWebhookEvent.create({
     event,
     payload: body as unknown as Record<string, unknown>,
     signatureValid,
-    processedAt,
-    emailSent,
-    errorMessage,
-    recipientEmail,
+    processedAt: new Date(),
   });
 
-  if (errorMessage && !emailSent) {
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
-  }
-
-  return NextResponse.json({ message: `${event} — email dispatched.` });
+  return NextResponse.json({ received: true, event });
 }
