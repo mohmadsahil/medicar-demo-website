@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
       phone: existingUser.phone ? `+91${existingUser.phone.replace(/^\+91/, "")}` : "",
     },
   );
+  console.log("Consent verification result:", verification);
 
   if (!verification.success) {
     return NextResponse.json(

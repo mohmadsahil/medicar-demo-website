@@ -165,13 +165,16 @@ function CompleteProfileContent() {
 
           {error && <div className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</div>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
-          >
-            {loading ? "Creating account..." : "Create Account & Continue"}
-          </button>
+          {/* suppressHydrationWarning: DA consent widget injects a label wrapper on the client */}
+          <div suppressHydrationWarning>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
+            >
+              {loading ? "Creating account..." : "Create Account & Continue"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
