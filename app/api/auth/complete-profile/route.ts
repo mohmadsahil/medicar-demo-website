@@ -28,7 +28,7 @@ async function verifyConsentTransaction(
   const apiKey = process.env.DIGITAL_ANUMATI_API_KEY;
   if (!apiKey) return { success: false, error: "Consent API key not configured" };
 
-  const verifyUrl = `${process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001"}/api/v1/server/transactions/verify`;
+  const verifyUrl = `${process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001"}/api/v1/server/transaction/verify`;
 
   try {
     const res = await fetch(verifyUrl, {

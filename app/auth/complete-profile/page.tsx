@@ -8,7 +8,7 @@ import { AlertCircle } from "lucide-react";
 // or after existing consent is loaded from server (consentState.transactionId)
 function getConsentTransactionId(): string | null {
   if (typeof window === "undefined") return null;
-  const w = window as Window & Record<string, unknown>;
+  const w = window as any;
   return (
     (w["daTransactionId"] as string) ||
     ((w["Anumati"] as Record<string, unknown>)?.["transactionId"] as string) ||

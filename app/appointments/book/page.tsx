@@ -65,12 +65,19 @@ function BookAppointmentContent() {
       try {
         const res = await fetch("/api/consent/verify", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
           body: JSON.stringify({ transactionId, referenceId }),
         });
         const result = await res.json();
         if (result.valid) {
           console.log("[DA] Consent verified — purposes:", result.purposes);
+          if (result.referenceId) {
+            daReferenceIdRef.current = result.referenceId;
+            console.log("[DA] Using reference ID:", result.referenceId);
+          }
         } else {
           console.warn("[DA] Consent invalid:", result.reason);
         }
