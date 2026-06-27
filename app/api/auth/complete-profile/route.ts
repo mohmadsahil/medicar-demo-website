@@ -10,6 +10,7 @@ import {
   issueRefreshToken,
 } from "@/lib/auth/jwt";
 import { grantConsent } from "@/lib/consent/manager";
+import { sendWelcomeEmail } from "@/lib/email";
 
 const schema = z.object({
   name: z.string().min(2).max(100),
@@ -23,13 +24,30 @@ const schema = z.object({
 async function verifyConsentTransaction(
   transactionId: string,
   referenceId: string,
-  refrenceInfo: { email?: string; name?: string; phone?: string },
+  referenceInfo: { email?: string; name?: string; phone?: string },
 ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
   const apiKey = process.env.DIGITAL_ANUMATI_API_KEY;
   if (!apiKey) return { success: false, error: "Consent API key not configured" };
 
   const verifyUrl = `${process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001"}/api/v1/server/transaction/verify`;
 
+  console.log(JSON.stringify({
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-secret-key": apiKey,
+      },
+      body: JSON.stringify({
+        transactionId,
+        referenceId,
+        referenceInfo: {
+          email: referenceInfo.email ?? "",
+          name:  referenceInfo.name  ?? "",
+          phone: referenceInfo.phone ?? "",
+        },
+      })
+  }, null, 2));
+  
   try {
     const res = await fetch(verifyUrl, {
       method: "POST",
@@ -40,10 +58,10 @@ async function verifyConsentTransaction(
       body: JSON.stringify({
         transactionId,
         referenceId,
-        refrenceInfo: {
-          email: refrenceInfo.email ?? "",
-          name:  refrenceInfo.name  ?? "",
-          phone: refrenceInfo.phone ?? "",
+        referenceInfo: {
+          email: referenceInfo.email ?? "",
+          name:  referenceInfo.name  ?? "",
+          phone: referenceInfo.phone ?? "",
         },
       }),
     });
@@ -156,6 +174,15 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       console.error(`Consent grant failed for ${purposeId}:`, e);
     }
+  }
+
+  // Send Welcome Email upon successful profile setup
+  if (user.email) {
+    sendWelcomeEmail({
+      name: user.name,
+      email: user.email,
+      grantedPurposes: verifiedPurposes,
+    }).catch((err) => console.error("[complete-profile] Failed to send welcome email:", err));
   }
 
   const accessToken = signAccessToken({
