@@ -21,6 +21,11 @@ async function processEvent(event: Record<string, any>) {
 
   console.log("[DA webhook details]", { eventType, dispatchId, referenceId, consentId, purposeId });
 
+  if (eventType === "consent.withdrawn" || eventType === "data.deleted") {
+    console.log("[DA webhook] Delaying postback for 60 seconds to showcase pending status in Developer Dashboard...");
+    await new Promise((resolve) => setTimeout(resolve, 60000));
+  }
+
   if (eventType === "consent.withdrawn") {
     await handleConsentWithdrawn(dispatchId, referenceId, consentId || purposeId);
   } else if (eventType === "data.deleted") {

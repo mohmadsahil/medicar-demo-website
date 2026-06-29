@@ -49,6 +49,11 @@ async function processEvent(ctx: {
   const consentId = body.data?.consentId || body.consentId || ""
   const purposeId = body.data?.purpose?.id || body.purposeId || ""
 
+  if (eventType === 'consent.withdrawn' || eventType === 'data.deleted') {
+    console.log('[DA Webhook] Delaying postback for 60 seconds to showcase pending status in Developer Dashboard...')
+    await new Promise((resolve) => setTimeout(resolve, 60000))
+  }
+
   switch (eventType) {
 
     case 'consent.withdrawn':
