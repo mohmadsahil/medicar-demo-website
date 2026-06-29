@@ -13,6 +13,11 @@ interface WebhookEvent {
   emailSent: boolean;
   errorMessage?: string;
   recipientEmail?: string;
+  postbackSent?: boolean;
+  postbackStatus?: string;
+  postbackPayload?: Record<string, unknown>;
+  postbackResponse?: Record<string, unknown>;
+  postbackSentAt?: string;
   createdAt: string;
 }
 
@@ -138,6 +143,17 @@ export default function WebhookEventsPage() {
                       <div className={`text-xs px-2 py-0.5 rounded-full ${event.signatureValid ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
                         {event.signatureValid ? "✓ Valid" : "✗ Invalid"}
                       </div>
+                      {["consent.withdrawn", "data.deleted"].includes(event.event) && (
+                        <div className={`text-[9px] px-1.5 py-0.5 rounded-full mt-1 inline-block font-semibold ${
+                          event.postbackStatus === "success"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : event.postbackStatus === "pending"
+                            ? "bg-amber-50 text-amber-700 border border-amber-200 animate-pulse"
+                            : "bg-red-50 text-red-700 border border-red-200"
+                        }`}>
+                          Postback: {event.postbackStatus ?? "pending"}
+                        </div>
+                      )}
                       <div className="text-xs text-gray-400 mt-1">{new Date(event.createdAt).toLocaleTimeString("en-IN")}</div>
                     </div>
                   </div>
@@ -158,6 +174,10 @@ export default function WebhookEventsPage() {
                     { label: "Recipient", value: selectedEvent.recipientEmail ?? "—" },
                     { label: "Processed At", value: new Date(selectedEvent.processedAt).toLocaleString("en-IN") },
                     ...(selectedEvent.errorMessage ? [{ label: "Error", value: selectedEvent.errorMessage }] : []),
+                    ...(selectedEvent.postbackStatus ? [
+                      { label: "Postback Status", value: selectedEvent.postbackStatus.toUpperCase() },
+                      { label: "Postback Sent At", value: selectedEvent.postbackSentAt ? new Date(selectedEvent.postbackSentAt).toLocaleString("en-IN") : "Pending (60s delay)" }
+                    ] : []),
                   ].map(({ label, value }) => (
                     <div key={label} className="flex gap-2">
                       <span className="text-gray-500 w-24 shrink-0">{label}:</span>
@@ -166,8 +186,29 @@ export default function WebhookEventsPage() {
                   ))}
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-3 mb-4 text-xs font-mono text-gray-600 max-h-40 overflow-y-auto">
-                  {JSON.stringify(selectedEvent.payload, null, 2)}
+                {selectedEvent.postbackPayload && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-500 mb-1">Postback Payload Sent:</p>
+                    <div className="bg-gray-950 rounded-lg p-3 text-xs font-mono text-emerald-400 max-h-40 overflow-y-auto">
+                      {JSON.stringify(selectedEvent.postbackPayload, null, 2)}
+                    </div>
+                  </div>
+                )}
+
+                {selectedEvent.postbackResponse && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-500 mb-1">Postback Response:</p>
+                    <div className="bg-gray-950 rounded-lg p-3 text-xs font-mono text-sky-400 max-h-40 overflow-y-auto">
+                      {JSON.stringify(selectedEvent.postbackResponse, null, 2)}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-gray-500 mb-1">Webhook Payload Received:</p>
+                  <div className="bg-gray-50 rounded-lg p-3 text-xs font-mono text-gray-600 max-h-40 overflow-y-auto">
+                    {JSON.stringify(selectedEvent.payload, null, 2)}
+                  </div>
                 </div>
 
                 <button

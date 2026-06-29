@@ -8,6 +8,11 @@ export interface IConsentWebhookEvent extends Document {
   emailSent: boolean;
   errorMessage?: string;
   recipientEmail?: string;
+  postbackSent?: boolean;
+  postbackPayload?: Record<string, unknown>;
+  postbackResponse?: Record<string, unknown>;
+  postbackStatus?: string;
+  postbackSentAt?: Date;
   createdAt: Date;
 }
 
@@ -20,6 +25,11 @@ const ConsentWebhookEventSchema = new Schema<IConsentWebhookEvent>(
     emailSent: { type: Boolean, default: false },
     errorMessage: { type: String },
     recipientEmail: { type: String },
+    postbackSent: { type: Boolean, default: false },
+    postbackPayload: { type: Schema.Types.Mixed },
+    postbackResponse: { type: Schema.Types.Mixed },
+    postbackStatus: { type: String },
+    postbackSentAt: { type: Date },
   },
   { timestamps: true }
 );

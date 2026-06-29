@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
+import ConsentWebhookEvent from "@/models/ConsentWebhookEvent";
 
 export async function POST(req: NextRequest) {
   const event = await req.json().catch(() => null);
@@ -8,6 +10,24 @@ export async function POST(req: NextRequest) {
   const referenceId = (event.data?.referenceId || event.referenceId) as string;
 
   console.log("[DA webhook]", eventType, referenceId);
+
+  // Log webhook event to MongoDB
+  try {
+    await connectDB();
+    await ConsentWebhookEvent.create({
+      event: eventType,
+      payload: event,
+      signatureValid: true,
+      processedAt: new Date(),
+      emailSent: true,
+      recipientEmail: event.data?.email ?? null,
+      postbackSent: false,
+      postbackStatus: "pending",
+    });
+  } catch (err) {
+    console.error("Failed to save webhook event to MongoDB:", err);
+  }
+
   processEvent(event).catch((e) => console.error("[DA webhook] processEvent failed:", e));
   return NextResponse.json({ received: true });
 }
@@ -47,13 +67,17 @@ async function handleConsentWithdrawn(dispatchId: string, referenceId: string, t
   const baseUrl = process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
   const secretKey = process.env.DIGITAL_ANUMATI_API_KEY ?? "";
 
+  const postbackPayload = {
+    dispatchId,
+    referenceId,
+    action: "withdraw",
+    purposeIds: targetId ? [targetId] : [],
+    reason: "Withdrawn via demo-web webhook confirmation",
+    performedBy: "demo_web_app",
+  };
+
   try {
     console.log("[DA] Processing withdrawal for", referenceId);
-
-    // YOUR BUSINESS LOGIC HERE:
-    // await unsubscribeFromEmails(referenceId)
-    // await updateCRM(referenceId, 'withdrawn')
-    // await stopScheduledJobs(referenceId)
 
     const res = await fetch(`${baseUrl}/api/v1/server/consent/action`, {
       method: "POST",
@@ -61,20 +85,53 @@ async function handleConsentWithdrawn(dispatchId: string, referenceId: string, t
         "x-secret-key": secretKey,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        dispatchId,
-        referenceId,
-        action: "withdraw",
-        purposeIds: targetId ? [targetId] : [],
-        reason: "Withdrawn via demo-web webhook confirmation",
-        performedBy: "demo_web_app",
-      }),
+      body: JSON.stringify(postbackPayload),
     });
 
     const result = await res.json().catch(() => ({}));
     console.log("[DA] Withdrawal confirmed:", (result as Record<string, unknown>)?.data);
+
+    // Update MongoDB
+    try {
+      await connectDB();
+      const query = {
+        $or: [
+          { "payload.id": dispatchId },
+          { "payload.metadata.dispatchId": dispatchId },
+          { "payload.dispatchId": dispatchId }
+        ]
+      };
+      await ConsentWebhookEvent.updateOne(query, {
+        postbackSent: true,
+        postbackStatus: res.ok ? "success" : "failed",
+        postbackPayload,
+        postbackResponse: result,
+        postbackSentAt: new Date(),
+      });
+    } catch (dbErr) {
+      console.error("Failed to update postback status in MongoDB:", dbErr);
+    }
   } catch (error) {
     console.error("[DA] Failed to process withdrawal:", error);
+    try {
+      await connectDB();
+      await ConsentWebhookEvent.updateOne(
+        {
+          $or: [
+            { "payload.id": dispatchId },
+            { "payload.metadata.dispatchId": dispatchId },
+            { "payload.dispatchId": dispatchId }
+          ]
+        },
+        {
+          postbackSent: true,
+          postbackStatus: "failed",
+          postbackPayload,
+          postbackResponse: { error: error instanceof Error ? error.message : "Network error" },
+          postbackSentAt: new Date(),
+        }
+      );
+    } catch {}
   }
 }
 
@@ -82,13 +139,17 @@ async function handleDataDeleted(dispatchId: string, referenceId: string, target
   const baseUrl = process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
   const secretKey = process.env.DIGITAL_ANUMATI_API_KEY ?? "";
 
+  const postbackPayload = {
+    dispatchId,
+    referenceId,
+    action: "erase",
+    purposeIds: targetId ? [targetId] : [],
+    reason: "Erased via demo-web webhook confirmation",
+    performedBy: "demo_web_app",
+  };
+
   try {
     console.log("[DA] Processing data deletion for", referenceId);
-
-    // YOUR BUSINESS LOGIC HERE:
-    // await deleteBookingRecords(referenceId)
-    // await deleteHealthData(referenceId)
-    // await anonymiseContactInfo(referenceId)
 
     const res = await fetch(`${baseUrl}/api/v1/server/consent/action`, {
       method: "POST",
@@ -96,19 +157,52 @@ async function handleDataDeleted(dispatchId: string, referenceId: string, target
         "x-secret-key": secretKey,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        dispatchId,
-        referenceId,
-        action: "erase",
-        purposeIds: targetId ? [targetId] : [],
-        reason: "Erased via demo-web webhook confirmation",
-        performedBy: "demo_web_app",
-      }),
+      body: JSON.stringify(postbackPayload),
     });
 
     const result = await res.json().catch(() => ({}));
     console.log("[DA] Deletion confirmed:", (result as Record<string, unknown>)?.data);
+
+    // Update MongoDB
+    try {
+      await connectDB();
+      const query = {
+        $or: [
+          { "payload.id": dispatchId },
+          { "payload.metadata.dispatchId": dispatchId },
+          { "payload.dispatchId": dispatchId }
+        ]
+      };
+      await ConsentWebhookEvent.updateOne(query, {
+        postbackSent: true,
+        postbackStatus: res.ok ? "success" : "failed",
+        postbackPayload,
+        postbackResponse: result,
+        postbackSentAt: new Date(),
+      });
+    } catch (dbErr) {
+      console.error("Failed to update postback status in MongoDB:", dbErr);
+    }
   } catch (error) {
     console.error("[DA] Failed to process deletion:", error);
+    try {
+      await connectDB();
+      await ConsentWebhookEvent.updateOne(
+        {
+          $or: [
+            { "payload.id": dispatchId },
+            { "payload.metadata.dispatchId": dispatchId },
+            { "payload.dispatchId": dispatchId }
+          ]
+        },
+        {
+          postbackSent: true,
+          postbackStatus: "failed",
+          postbackPayload,
+          postbackResponse: { error: error instanceof Error ? error.message : "Network error" },
+          postbackSentAt: new Date(),
+        }
+      );
+    } catch {}
   }
 }
