@@ -45,16 +45,18 @@ async function processEvent(ctx: {
   referenceId: string
   body:        any
 }) {
-  const { eventType, dispatchId, referenceId } = ctx
+  const { eventType, dispatchId, referenceId, body } = ctx
+  const consentId = body.data?.consentId || body.consentId || ""
+  const purposeId = body.data?.purpose?.id || body.purposeId || ""
 
   switch (eventType) {
 
     case 'consent.withdrawn':
-      await handleWithdrawn(dispatchId, referenceId)
+      await handleWithdrawn(dispatchId, referenceId, consentId || purposeId)
       break
 
     case 'data.deleted':
-      await handleDeleted(dispatchId, referenceId)
+      await handleDeleted(dispatchId, referenceId, consentId || purposeId)
       break
 
     case 'consent.created':
@@ -118,12 +120,11 @@ async function sendPostback(endpoint: string, payload: object, dispatchId: strin
 
   console.log(
     '[DA] Postback confirmed | dispatch:', dispatchId,
-    '| complianceFlag:', (result as any).data?.complianceFlag,
     '| took:', ms + 'ms',
   )
 }
 
-async function handleWithdrawn(dispatchId: string, referenceId: string) {
+async function handleWithdrawn(dispatchId: string, referenceId: string, targetId: string) {
   const start = Date.now()
   console.log('[DA] Processing withdrawal | ref:', referenceId)
 
@@ -134,17 +135,14 @@ async function handleWithdrawn(dispatchId: string, referenceId: string) {
     console.log('[DA] Withdrawal work done | ref:', referenceId, `| took: ${ms}ms`)
 
     await sendPostback(
-      '/api/v1/server/app/consents/withdraw/confirm',
+      '/api/v1/server/consent/action',
       {
         dispatchId,
         referenceId,
-        status:      'processed',
-        processedAt: new Date().toISOString(),
-        actions: [
-          { type: 'email_stopped', result: 'success' },
-          { type: 'crm_updated',   result: 'success' },
-        ],
-        remark: `Completed in ${ms}ms`,
+        action: 'withdraw',
+        purposeIds: targetId ? [targetId] : [],
+        reason: `Completed in ${ms}ms`,
+        performedBy: 'demo_web_app',
       },
       dispatchId,
     )
@@ -155,23 +153,23 @@ async function handleWithdrawn(dispatchId: string, referenceId: string) {
     console.error('[DA] Withdrawal error | ref:', referenceId, `| ${ms}ms |`, error)
 
     await sendPostback(
-      '/api/v1/server/app/consents/withdraw/confirm',
+      '/api/v1/server/consent/action',
       {
         dispatchId,
         referenceId,
-        status:      'failed',
-        processedAt: new Date().toISOString(),
-        actions:     [],
-        remark: isTimeout
+        action: 'withdraw',
+        purposeIds: targetId ? [targetId] : [],
+        reason: isTimeout
           ? `Timed out after ${DB_TIMEOUT_MS}ms`
           : `Error: ${error instanceof Error ? error.message : 'Unknown'}`,
+        performedBy: 'demo_web_app',
       },
       dispatchId,
     ).catch(console.error)
   }
 }
 
-async function handleDeleted(dispatchId: string, referenceId: string) {
+async function handleDeleted(dispatchId: string, referenceId: string, targetId: string) {
   const start = Date.now()
   console.log('[DA] Processing deletion | ref:', referenceId)
 
@@ -186,14 +184,14 @@ async function handleDeleted(dispatchId: string, referenceId: string) {
     console.log('[DA] Deletion work done | ref:', referenceId, `| took: ${ms}ms | types:`, deletedTypes)
 
     await sendPostback(
-      '/api/v1/server/app/consents/data-deleted/confirm',
+      '/api/v1/server/consent/action',
       {
         dispatchId,
         referenceId,
-        status:    'deleted',
-        deletedAt: new Date().toISOString(),
-        dataTypes: deletedTypes,
-        remark:    `Completed in ${ms}ms`,
+        action: 'erase',
+        purposeIds: targetId ? [targetId] : [],
+        reason: `Completed in ${ms}ms`,
+        performedBy: 'demo_web_app',
       },
       dispatchId,
     )
@@ -204,16 +202,16 @@ async function handleDeleted(dispatchId: string, referenceId: string) {
     console.error('[DA] Deletion error | ref:', referenceId, `| ${ms}ms |`, error)
 
     await sendPostback(
-      '/api/v1/server/app/consents/data-deleted/confirm',
+      '/api/v1/server/consent/action',
       {
         dispatchId,
         referenceId,
-        status:    'failed',
-        deletedAt: new Date().toISOString(),
-        dataTypes: [],
-        remark: isTimeout
+        action: 'erase',
+        purposeIds: targetId ? [targetId] : [],
+        reason: isTimeout
           ? `Timed out after ${DB_TIMEOUT_MS}ms`
           : `Error: ${error instanceof Error ? error.message : 'Unknown'}`,
+        performedBy: 'demo_web_app',
       },
       dispatchId,
     ).catch(console.error)

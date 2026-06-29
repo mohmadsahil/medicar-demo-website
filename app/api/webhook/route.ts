@@ -4,22 +4,27 @@ export async function POST(req: NextRequest) {
   const event = await req.json().catch(() => null);
   if (!event) return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
 
-  console.log("[DA webhook]", event.event, event.referenceId);
+  const eventType = (event.type || event.event) as string;
+  const referenceId = (event.data?.referenceId || event.referenceId) as string;
+
+  console.log("[DA webhook]", eventType, referenceId);
   processEvent(event).catch((e) => console.error("[DA webhook] processEvent failed:", e));
   return NextResponse.json({ received: true });
 }
 
-async function processEvent(event: Record<string, unknown>) {
-  const eventType = event.event as string;
-  const dispatchId = event.dispatchId as string;
-  const referenceId = event.referenceId as string;
+async function processEvent(event: Record<string, any>) {
+  const eventType = (event.type || event.event) as string;
+  const dispatchId = (event.metadata?.dispatchId || event.dispatchId || event.id) as string;
+  const referenceId = (event.data?.referenceId || event.referenceId) as string;
+  const consentId = (event.data?.consentId || event.consentId) as string;
+  const purposeId = (event.data?.purpose?.id || event.purposeId) as string;
 
-  console.log("[DA webhook]", eventType, referenceId);
+  console.log("[DA webhook details]", { eventType, dispatchId, referenceId, consentId, purposeId });
 
   if (eventType === "consent.withdrawn") {
-    await handleConsentWithdrawn(dispatchId, referenceId);
+    await handleConsentWithdrawn(dispatchId, referenceId, consentId || purposeId);
   } else if (eventType === "data.deleted") {
-    await handleDataDeleted(dispatchId, referenceId);
+    await handleDataDeleted(dispatchId, referenceId, consentId || purposeId);
   } else if (eventType === "consent.captured") {
     console.log("[DA] New consent captured for", referenceId);
   } else if (eventType === "consent.granted") {
@@ -33,7 +38,7 @@ async function processEvent(event: Record<string, unknown>) {
   }
 }
 
-async function handleConsentWithdrawn(dispatchId: string, referenceId: string) {
+async function handleConsentWithdrawn(dispatchId: string, referenceId: string, targetId: string) {
   const baseUrl = process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
   const secretKey = process.env.DIGITAL_ANUMATI_API_KEY ?? "";
 
@@ -45,7 +50,7 @@ async function handleConsentWithdrawn(dispatchId: string, referenceId: string) {
     // await updateCRM(referenceId, 'withdrawn')
     // await stopScheduledJobs(referenceId)
 
-    const res = await fetch(`${baseUrl}/api/v1/server/app/consents/withdraw/confirm`, {
+    const res = await fetch(`${baseUrl}/api/v1/server/consent/action`, {
       method: "POST",
       headers: {
         "x-secret-key": secretKey,
@@ -54,13 +59,10 @@ async function handleConsentWithdrawn(dispatchId: string, referenceId: string) {
       body: JSON.stringify({
         dispatchId,
         referenceId,
-        status: "processed",
-        processedAt: new Date().toISOString(),
-        actions: [
-          { type: "email_unsubscribed", result: "success" },
-          { type: "crm_updated", result: "success" },
-        ],
-        remark: "",
+        action: "withdraw",
+        purposeIds: targetId ? [targetId] : [],
+        reason: "Withdrawn via demo-web webhook confirmation",
+        performedBy: "demo_web_app",
       }),
     });
 
@@ -68,23 +70,10 @@ async function handleConsentWithdrawn(dispatchId: string, referenceId: string) {
     console.log("[DA] Withdrawal confirmed:", (result as Record<string, unknown>)?.data);
   } catch (error) {
     console.error("[DA] Failed to process withdrawal:", error);
-
-    await fetch(`${baseUrl}/api/v1/server/app/consents/withdraw/confirm`, {
-      method: "POST",
-      headers: { "x-secret-key": secretKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dispatchId,
-        referenceId,
-        status: "failed",
-        processedAt: new Date().toISOString(),
-        actions: [],
-        remark: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      }),
-    }).catch((e) => console.error("[DA] Postback failed too:", e));
   }
 }
 
-async function handleDataDeleted(dispatchId: string, referenceId: string) {
+async function handleDataDeleted(dispatchId: string, referenceId: string, targetId: string) {
   const baseUrl = process.env.DIGITAL_ANUMATI_BASE_URL ?? "http://localhost:5001";
   const secretKey = process.env.DIGITAL_ANUMATI_API_KEY ?? "";
 
@@ -96,9 +85,7 @@ async function handleDataDeleted(dispatchId: string, referenceId: string) {
     // await deleteHealthData(referenceId)
     // await anonymiseContactInfo(referenceId)
 
-    const deletedDataTypes = ["booking_records", "contact_info"];
-
-    const res = await fetch(`${baseUrl}/api/v1/server/app/consents/data-deleted/confirm`, {
+    const res = await fetch(`${baseUrl}/api/v1/server/consent/action`, {
       method: "POST",
       headers: {
         "x-secret-key": secretKey,
@@ -107,10 +94,10 @@ async function handleDataDeleted(dispatchId: string, referenceId: string) {
       body: JSON.stringify({
         dispatchId,
         referenceId,
-        status: "deleted",
-        deletedAt: new Date().toISOString(),
-        dataTypes: deletedDataTypes,
-        remark: "",
+        action: "erase",
+        purposeIds: targetId ? [targetId] : [],
+        reason: "Erased via demo-web webhook confirmation",
+        performedBy: "demo_web_app",
       }),
     });
 
@@ -118,18 +105,5 @@ async function handleDataDeleted(dispatchId: string, referenceId: string) {
     console.log("[DA] Deletion confirmed:", (result as Record<string, unknown>)?.data);
   } catch (error) {
     console.error("[DA] Failed to process deletion:", error);
-
-    await fetch(`${baseUrl}/api/v1/server/app/consents/data-deleted/confirm`, {
-      method: "POST",
-      headers: { "x-secret-key": secretKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dispatchId,
-        referenceId,
-        status: "failed",
-        deletedAt: new Date().toISOString(),
-        dataTypes: [],
-        remark: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      }),
-    }).catch((e) => console.error("[DA] Postback failed:", e));
   }
 }
