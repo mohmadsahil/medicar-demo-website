@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Menu, X, Phone, ChevronDown, User, LogOut, Calendar, Shield } from "lucide-react";
+import TestFormsMenu from "@/components/TestFormsMenu";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -99,6 +100,7 @@ export default function Header() {
               </Link>
             )
           )}
+          <TestFormsMenu />
         </nav>
 
         {/* Right actions */}

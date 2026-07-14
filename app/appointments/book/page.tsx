@@ -29,6 +29,7 @@ function BookAppointmentContent() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const daReferenceIdRef = useRef("");
   const daTxnIdRef = useRef("");
 
@@ -87,7 +88,8 @@ function BookAppointmentContent() {
     };
 
     window.addEventListener("da:consent:captured", handleConsentCaptured);
-    return () => window.removeEventListener("da:consent:captured", handleConsentCaptured);
+    return () =>
+      window.removeEventListener("da:consent:captured", handleConsentCaptured);
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -110,7 +112,9 @@ function BookAppointmentContent() {
           doctorSlug: form.doctorSlug,
           dateTime,
           reason: form.reason,
-          ...(daReferenceIdRef.current ? { consentReceiptId: daReferenceIdRef.current } : {}),
+          ...(daReferenceIdRef.current
+            ? { consentReceiptId: daReferenceIdRef.current }
+            : {}),
         }),
       });
       const data = await res.json();
@@ -293,9 +297,22 @@ function BookAppointmentContent() {
             </div>
           )}
 
+          <label className="flex items-start gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+            />
+            <span className="text-xs leading-relaxed">
+              I consent under the DPDP Act, 2023 to Anumati Health processing my
+              contact and OTP data for authentication and appointments
+            </span>
+          </label>
           <button
             type="submit"
-            disabled={bookingLoading}
+            da-trigger="456534a9-6ad2-4243-ab8c-18d12435bad5"
+            disabled={bookingLoading || !agreed}
             className="w-full bg-sky-600 text-white py-3.5 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
           >
             {bookingLoading ? "Booking..." : "Confirm Appointment"}

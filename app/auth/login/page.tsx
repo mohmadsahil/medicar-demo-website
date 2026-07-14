@@ -15,6 +15,7 @@ function LoginContent() {
   const [step, setStep] = useState<Step>("identifier");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -112,13 +113,30 @@ function LoginContent() {
                   />
                 </div>
                 {error && <div className="text-red-600 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</div>}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 bg-sky-600 text-white py-3 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
-                >
-                  {loading ? "Sending..." : "Send OTP"} <ArrowRight size={16} />
-                </button>
+                <label className="flex items-start gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                  />
+                  <span className="text-xs leading-relaxed">
+                    I consent under the DPDP Act, 2023 to Anumati Health
+                    processing my contact and OTP data for authentication and
+                    appointments
+                  </span>
+                </label>
+
+                <div>
+                  <button
+                    type="submit"
+                    disabled={loading || !agreed}
+                    da-trigger="456534a9-6ad2-4243-ab8c-18d12435bad5"
+                    className="w-full flex items-center justify-center gap-2 bg-sky-600 text-white py-3 rounded-xl font-semibold hover:bg-sky-700 disabled:opacity-60 transition-colors"
+                  >
+                    {loading ? "Sending..." : "Send OTP"} <ArrowRight size={16} />
+                  </button>
+                </div>
               </form>
             </>
           ) : (
