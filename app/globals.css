@@ -32,3 +32,104 @@ body {
     opacity: 1;
   }
 }
+
+/* ---------- Anumati DPDP consent banner (ported from injected SDK UI) ---------- */
+.itc-bar-enter {
+  --secondary: #64748b;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+  animation: itc-bar-in 0.28s ease-out;
+}
+@keyframes itc-bar-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.itc-details-close-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  border: 2px solid #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px -2px rgba(0,0,0,0.25);
+  z-index: 2;
+}
+
+.itc-bar-heading {
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.itc-version-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.itc-bar-description {
+  font-size: 12px;
+}
+.itc-bar-description p { margin: 0; }
+
+.itc-duration-fixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.itc-duration-fixed-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+}
+.itc-duration-fixed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.itc-view-details-btn { color: #006aa8; cursor: pointer; background: transparent; border: 0; padding: 0; }
+.itc-view-details-btn span { text-decoration-color: rgba(0,106,168,0.6); }
+.itc-view-details-btn:hover span { text-decoration-color: #006aa8; }
+
+.itc-btn { border: 1px solid transparent; transition: background 0.15s, box-shadow 0.15s; }
+.itc-btn--outline {
+  color: #006aa8;
+  border-color: rgba(0,106,168,0.4);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.itc-btn--outline:hover { background: rgba(0,106,168,0.08); }
+.itc-btn--primary {
+  color: #fff;
+  background: #006aa8;
+  border-color: #005a90;
+}
+.itc-btn--primary:hover { background: rgba(0,106,168,0.9); }
+
+.itc-poweredby-link,
+.itc-poweredby-link-popup,
+.itc-poweredby-link-mobile {
+  color: #006aa8;
+  font-weight: 500;
+  text-decoration: none;
+}
+.itc-poweredby-link:hover,
+.itc-poweredby-link-popup:hover,
+.itc-poweredby-link-mobile:hover { text-decoration: underline; }
