@@ -25,6 +25,8 @@ const NAV_LINKS = [
   { label: "Services", href: "/services" },
   { label: "Health Packages", href: "/health-packages" },
   { label: "Contact", href: "/contact" },
+  { label: "Form Gallery", href: "/forms" },
+  { label: "Careers", href: "/careers" },
 ];
 
 export default function Header() {

@@ -33,17 +33,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <head>
-        <link rel="preconnect" href="https://cdn.digitalanumati.com" />
-        <link rel="preconnect" href="https://uat-apis.digitalanumati.com" />
+        <script src="https://demo.digitalanumati.com/anumati-dpdp-consent-v1.js"></script>
         <script
           src="https://demo.digitalanumati.com/anumati-blocker.js"
-          data-site-key={process.env.NEXT_PUBLIC_DA_SITE_KEY ?? "APP_medicare_1781873589878"}
+          data-site-key="APP_medicare-plus-website_1784093284509"
         ></script>
       </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-gray-50 text-gray-900">
-        <script
-          src="https://demo.digitalanumati.com/anumati-dpdp-consent-v1.js"
-        ></script>
         <AuthProvider>
           <ConsentProvider>
             <Header />
